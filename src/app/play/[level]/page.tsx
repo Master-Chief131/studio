@@ -16,14 +16,18 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   const [puzzleData, setPuzzleData] = useState<Puzzle | null>(null);
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);
-  const level = parseInt(params.level, 10);
-
 
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
         router.push('/');
       } else {
+        const level = parseInt(params.level, 10);
+        if (isNaN(level)) {
+            router.push('/dashboard');
+            return;
+        }
+
         const puzzle = getPuzzle(level);
         const photos = getFromStorage<Photos>('sudoku-photos');
         
@@ -38,7 +42,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
         setLoading(false);
       }
     }
-  }, [level, router, user, authLoading]);
+  }, [params.level, router, user, authLoading]);
 
   if (authLoading || loading) {
     return (
