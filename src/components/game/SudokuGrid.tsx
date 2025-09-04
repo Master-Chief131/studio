@@ -62,7 +62,8 @@ export function SudokuGrid({
               key={`${rowIndex}-${colIndex}`}
               onClick={() => handleCellClick(rowIndex, colIndex)}
               className={cn(
-                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-1000 cursor-pointer",
+                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-1000",
+                !isGiven && "cursor-pointer",
                 (colIndex + 1) % 3 === 0 && colIndex < 8 && "border-r-2 border-r-primary/50",
                 (rowIndex + 1) % 3 === 0 && rowIndex < 8 && "border-b-2 border-b-primary/50",
                 isRevealed && "bg-accent/50",
@@ -78,14 +79,14 @@ export function SudokuGrid({
                 value={cell || ''}
                 onChange={(e) => {
                     const value = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                    if (!isNaN(value!) || value === null) {
+                    if ((value && !isNaN(value) && value > 0 && value <= 9) || value === null) {
                         onInputChange(rowIndex, colIndex, value);
                     }
                 }}
-                readOnly
+                readOnly={isGiven}
                 className={cn(
-                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000 pointer-events-none',
-                   isGiven ? 'text-primary-foreground/80' : 'text-accent-foreground',
+                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000',
+                   isGiven ? 'text-primary-foreground/80 cursor-default' : 'text-accent-foreground cursor-pointer',
                   isError && 'text-destructive',
                   isRevealed && 'text-green-600',
                   isSubgridRevealed && 'text-white'
