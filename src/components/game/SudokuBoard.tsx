@@ -16,9 +16,10 @@ interface SudokuBoardProps {
   photoData: PhotoData | null;
   helpCell: Cell | null;
   gameState: GameState;
+  onError: () => void;
 }
 
-export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid, helpCell, gameState }: SudokuBoardProps) {
+export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid, helpCell, gameState, onError }: SudokuBoardProps) {
   const [revealedBlocks, setRevealedBlocks] = useState<boolean[]>(Array(9).fill(false));
   const [isComplete, setIsComplete] = useState(false);
   const router = useRouter();
@@ -72,6 +73,7 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
           solution={puzzleData.solution}
           onInputChange={handleInputChange}
           helpCell={helpCell}
+          onError={onError}
         />
       )}
       {isComplete && photoData && (

@@ -145,26 +145,37 @@ export default function PlayPage({ params }: { params: { level: string } }) {
       });
       triggerHelp();
     } else {
-        const newLives = gameState.lives - 1;
-        setGameState({ ...gameState, lives: newLives });
-        
-        if (newLives > 0) {
-            toast({
-                title: "Respuesta incorrecta",
-                description: `Te quedan ${newLives} ${newLives === 1 ? 'vida' : 'vidas'}.`,
-                variant: "destructive",
-            });
-        } else {
-            toast({
-                title: "¡Oh no!",
-                description: "Te quedaste sin vidas.",
-                variant: "destructive",
-            });
-            setGameState({ ...gameState, isGameOver: true, lives: 0 });
-        }
+        toast({
+            title: "Respuesta incorrecta",
+            description: "¡No te preocupes, no pierdes vidas aquí! Inténtalo la próxima vez.",
+            variant: "destructive",
+        });
     }
     setCurrentQuestion(null);
   }
+
+  const handleError = () => {
+    if(gameState.isGameOver) return;
+    
+    const newLives = gameState.lives - 1;
+    setGameState(prev => ({ ...prev, lives: newLives }));
+
+    if (newLives > 0) {
+        toast({
+            title: "¡Ups! Número incorrecto",
+            description: `Te quedan ${newLives} ${newLives === 1 ? 'vida' : 'vidas'}.`,
+            variant: "destructive",
+        });
+    } else {
+        toast({
+            title: "¡Oh no!",
+            description: "Te quedaste sin vidas.",
+            variant: "destructive",
+        });
+        setGameState(prev => ({ ...prev, isGameOver: true, lives: 0 }));
+    }
+  }
+
 
   if (authLoading || loading) {
     return (
@@ -218,6 +229,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
             photoData={photoData}
             helpCell={helpCell}
             gameState={gameState}
+            onError={handleError}
           />
         </main>
       </div>

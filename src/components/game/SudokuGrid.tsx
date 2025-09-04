@@ -11,9 +11,10 @@ interface SudokuGridProps {
   solution: Grid;
   onInputChange: (row: number, col: number, value: number | null) => void;
   helpCell: Cell | null;
+  onError: () => void;
 }
 
-export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, helpCell }: SudokuGridProps) {
+export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, helpCell, onError }: SudokuGridProps) {
   const [errors, setErrors] = useState<boolean[][]>(Array(9).fill(null).map(() => Array(9).fill(false)));
   const [revealedCell, setRevealedCell] = useState<Cell | null>(null);
 
@@ -33,7 +34,10 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
       onInputChange(row, col, enteredValue);
       
       if (enteredValue !== null && enteredValue !== solution[row][col]) {
-        newErrors[row][col] = true;
+        if(!errors[row][col]){ // Only trigger error if it wasn't already an error
+            onError();
+            newErrors[row][col] = true;
+        }
       } else {
         newErrors[row][col] = false;
       }
