@@ -31,7 +31,7 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange }
   };
 
   return (
-    <div className="relative w-full h-full grid grid-cols-9 grid-rows-9 gap-0.5 p-1 sm:p-2 bg-card/80 backdrop-blur-sm rounded-lg shadow-2xl">
+    <div className="relative w-full h-full grid grid-cols-9 grid-rows-9 gap-0.5 p-1 sm:p-2 bg-card/0 backdrop-blur-sm rounded-lg shadow-2xl">
       {currentGrid.map((row, rowIndex) =>
         row.map((cell, colIndex) => {
           const isGiven = initialGrid[rowIndex][colIndex] !== null;
