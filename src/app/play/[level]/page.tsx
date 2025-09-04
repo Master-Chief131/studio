@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -8,7 +9,7 @@ import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
 import { getFromStorage } from '@/lib/storage';
 import { SudokuBoard } from '@/components/game/SudokuBoard';
 import { Header } from '@/components/shared/Header';
-import type { Puzzle, Photos, PhotoData, Cell, HelpQuestion, GameState } from '@/types';
+import type { Puzzle, Photos, PhotoData, Cell, HelpQuestion, GameState, Grid } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, LifeBuoy, Heart } from 'lucide-react';

@@ -54,7 +54,7 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
         }, 1200);
     }
 
-  }, [currentGrid, puzzleData.solution, isComplete, puzzleData.level, revealedBlocks, gameState.isGameOver]);
+  }, [currentGrid, puzzleData.solution, isComplete, puzzleData.level, gameState.isGameOver]);
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
     const newGrid = currentGrid.map((r, rowIndex) =>
