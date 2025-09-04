@@ -6,7 +6,7 @@ import { MusicProvider } from '@/hooks/useMusic';
 
 export const metadata: Metadata = {
   title: 'SudokuLove',
-  description: 'A special Sudoku game for a special someone.',
+  description: 'Un juego de Sudoku especial para alguien especial.',
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

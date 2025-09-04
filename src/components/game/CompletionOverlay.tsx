@@ -17,7 +17,7 @@ export function CompletionOverlay({ onBack, imageUrl, message }: CompletionOverl
 
   return (
     <div className="absolute inset-0 z-20 rounded-lg overflow-hidden">
-      <Image src={imageUrl} alt="Completed puzzle" layout="fill" objectFit="cover" />
+      <Image src={imageUrl} alt="Puzzle completado" layout="fill" objectFit="cover" />
       <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center p-4">
         <div 
           className={cn(
@@ -26,7 +26,7 @@ export function CompletionOverlay({ onBack, imageUrl, message }: CompletionOverl
           )}
           onClick={() => setShowMessage(false)}
         >
-          <h2 className="font-headline text-2xl font-bold text-white">¡Recuerdo desbloquado...!</h2>
+          <h2 className="font-headline text-2xl font-bold text-white">¡Recuerdo desbloqueado!</h2>
           <p className="mt-2 text-lg text-white/90 max-w-md">
             {message}
           </p>

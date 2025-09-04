@@ -1,4 +1,3 @@
-
 'use client';
 
 import type { Grid, Cell } from '@/types';
@@ -21,7 +20,7 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
   useEffect(() => {
       if (helpCell) {
           setRevealedCell(helpCell);
-          const timer = setTimeout(() => setRevealedCell(null), 1500); // Highlight for 1.5 seconds
+          const timer = setTimeout(() => setRevealedCell(null), 1500); // Resaltar por 1.5 segundos
           return () => clearTimeout(timer);
       }
   }, [helpCell]);
@@ -34,7 +33,7 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
       onInputChange(row, col, enteredValue);
       
       if (enteredValue !== null && enteredValue !== solution[row][col]) {
-        if(!errors[row][col]){ // Only trigger error if it wasn't already an error
+        if(!errors[row][col]){ // Solo activar error si no era ya un error
             onError();
             newErrors[row][col] = true;
         }
@@ -78,7 +77,7 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
                   isError && 'text-destructive',
                   (isCorrect || isRevealed) && 'text-green-600',
                 )}
-                aria-label={`Cell R${rowIndex + 1}C${colIndex + 1}`}
+                aria-label={`Celda F${rowIndex + 1}C${colIndex + 1}`}
               />
             </div>
           );

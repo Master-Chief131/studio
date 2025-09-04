@@ -49,7 +49,7 @@ export default function GalleryPage() {
   }, [user, loading, router]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Cargando...</div>;
   }
 
   return (
@@ -60,11 +60,11 @@ export default function GalleryPage() {
             <div className='flex items-center justify-between mb-8'>
                 <Button variant="outline" onClick={() => router.push('/dashboard')}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Puzzles
+                    Volver a los Puzzles
                 </Button>
                 <div className="text-center">
-                    <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Your Memories</h2>
-                    <p className="text-muted-foreground mt-2">A collection of your unlocked moments.</p>
+                    <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Tus Recuerdos</h2>
+                    <p className="text-muted-foreground mt-2">Una colección de tus momentos desbloqueados.</p>
                 </div>
                 {/* Spacer div */}
                 <div style={{ width: '150px' }}></div>
@@ -75,10 +75,10 @@ export default function GalleryPage() {
               {unlockedPhotos.map((photo) => (
                 <Card key={photo.level} className="group relative overflow-hidden rounded-lg">
                   <CardHeader className="absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/60 to-transparent p-4">
-                    <CardTitle className="text-white font-headline text-lg">Level {photo.level}</CardTitle>
+                    <CardTitle className="text-white font-headline text-lg">Nivel {photo.level}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0 aspect-square">
-                    <Image src={photo.imageUrl} alt={`Memory from level ${photo.level}`} layout="fill" objectFit="cover" />
+                    <Image src={photo.imageUrl} alt={`Recuerdo del nivel ${photo.level}`} layout="fill" objectFit="cover" />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
                        <Button
                             variant="secondary"
@@ -86,7 +86,7 @@ export default function GalleryPage() {
                             onClick={() => setSelectedPhoto(photo)}
                         >
                             <Maximize className="mr-2 h-4 w-4" />
-                            View
+                            Ver
                         </Button>
                     </div>
                   </CardContent>
@@ -95,8 +95,8 @@ export default function GalleryPage() {
             </div>
           ) : (
             <div className="text-center py-20">
-              <p className="text-xl text-muted-foreground">You haven't unlocked any photos yet.</p>
-              <p className="mt-2">Complete some puzzles to start your collection!</p>
+              <p className="text-xl text-muted-foreground">Aún no has desbloqueado ninguna foto.</p>
+              <p className="mt-2">¡Completa algunos puzzles para empezar tu colección!</p>
             </div>
           )}
         </main>

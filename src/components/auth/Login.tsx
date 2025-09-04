@@ -46,8 +46,8 @@ export function Login() {
         if (user) {
           saveToStorage('sudoku-user', user);
           toast({
-            title: `Welcome, ${user.username}!`,
-            description: 'You have successfully logged in.',
+            title: `¡Bienvenid@, ${user.username}!`,
+            description: 'Has iniciado sesión correctamente.',
           });
           if (user.role === 'player') {
             const music = getFromStorage<string>('sudoku-background-music');
@@ -59,8 +59,8 @@ export function Login() {
         } else {
           toast({
             variant: 'destructive',
-            title: 'Login Failed',
-            description: 'Invalid username. Please try again.',
+            title: 'Inicio de Sesión Fallido',
+            description: 'Nombre de usuario inválido. Por favor, inténtalo de nuevo.',
           });
           setLoading(false);
         }
@@ -72,17 +72,17 @@ export function Login() {
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Ingresa tu Nombre</CardTitle>
         <CardDescription>
-          Usa '{PLAYER_USER}' para jugar o '{ADMIN_USER}' para cnfigurar el juego.
+          Usa '{PLAYER_USER}' para jugar o '{ADMIN_USER}' para configurar el juego.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleLogin}>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Name</Label>
+            <Label htmlFor="username">Nombre</Label>
             <Input
               id="username"
               type="text"
-              placeholder="E.g., Player"
+              placeholder="Ej., Player"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -94,7 +94,7 @@ export function Login() {
         <CardFooter>
           <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
             <LogIn className="mr-2 h-4 w-4" />
-            {loading ? 'Logging in...' : 'Enter SudokuLove'}
+            {loading ? 'Iniciando sesión...' : 'Entrar a SudokuLove'}
           </Button>
         </CardFooter>
       </form>

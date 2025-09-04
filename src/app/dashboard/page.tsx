@@ -48,8 +48,8 @@ function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Game Manager</h2>
-        <p className="text-muted-foreground mt-2">Manage photos, messages, and background music.</p>
+        <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Administrador del Juego</h2>
+        <p className="text-muted-foreground mt-2">Gestiona las fotos, mensajes y música de fondo.</p>
       </div>
       <PhotoUploader />
     </div>
@@ -61,14 +61,14 @@ function PlayerDashboard() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Choose a Puzzle</h2>
-        <p className="text-muted-foreground mt-2">Complete a puzzle to reveal a piece of a special photo!</p>
+        <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Elige un Puzzle</h2>
+        <p className="text-muted-foreground mt-2">¡Completa un puzzle para revelar una pieza de una foto especial!</p>
       </div>
       <div className="flex justify-center items-center gap-4 mb-6">
         <Link href="/gallery" passHref>
             <Button variant="outline">
                 <GalleryVerticalEnd className="mr-2 h-4 w-4" />
-                View Your Gallery
+                Ver tu Galería
             </Button>
         </Link>
       </div>
@@ -77,19 +77,19 @@ function PlayerDashboard() {
           <Card key={level.level} className="hover:shadow-lg hover:-translate-y-1 transition-transform duration-200">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
-                <span className='font-headline'>Level {level.level}</span>
+                <span className='font-headline'>Nivel {level.level}</span>
                 <div className="flex">
                     {Array.from({length: level.level}).map((_,i) => <Heart key={i} className="h-4 w-4 text-primary fill-current" />)}
                     {Array.from({length: 5 - level.level}).map((_,i) => <Heart key={i} className="h-4 w-4 text-primary/30" />)}
                 </div>
               </CardTitle>
-              <CardDescription>A new challenge awaits.</CardDescription>
+              <CardDescription>Un nuevo desafío te espera.</CardDescription>
             </CardHeader>
             <CardContent>
               <Link href={`/play/${level.level}`} passHref>
                 <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                   <PlayCircle className="mr-2 h-4 w-4" />
-                  Start Playing
+                  Empezar a Jugar
                 </Button>
               </Link>
             </CardContent>

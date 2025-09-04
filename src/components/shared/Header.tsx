@@ -25,7 +25,7 @@ export function Header() {
         <div className="flex items-center gap-4">
           {user && (
             <span className="text-sm text-muted-foreground hidden sm:inline">
-              Welcome, <span className="font-semibold">{user.username}</span>
+              Bienvenid@, <span className="font-semibold">{user.username}</span>
             </span>
           )}
           {musicUrl && user?.role === 'player' && isPlaying && (
@@ -38,7 +38,7 @@ export function Header() {
           )}
           <Button variant="ghost" size="sm" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            Cerrar Sesión
           </Button>
         </div>
       </div>
