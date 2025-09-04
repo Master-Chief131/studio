@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,15 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getFromStorage, saveToStorage } from '@/lib/storage';
-import type { Photos, PhotoData } from '@/types';
+import type { Photos, PhotoData, HelpQuestion } from '@/types';
 import Image from 'next/image';
 import { puzzles } from '@/lib/sudoku';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Trash2, Eye, Music, X } from 'lucide-react';
+import { Upload, Trash2, Eye, Music, X, PlusCircle, Save } from 'lucide-react';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { Separator } from '../ui/separator';
+import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 
 const defaultMessages: {[key: string]: string} = {
     '1': 'Recuerdas cuando...',
@@ -24,6 +26,141 @@ const defaultMessages: {[key: string]: string} = {
     '4': 'Solo tú y yo...',
     '5': 'Mi lugar favorito es a tu lado.'
 }
+
+function HelpQuestionsManager() {
+    const { toast } = useToast();
+    const [questions, setQuestions] = useState<HelpQuestion[]>([]);
+    const [editingQuestion, setEditingQuestion] = useState<Partial<HelpQuestion>>({
+        question: '',
+        options: ['', '', '', ''],
+        correctAnswerIndex: 0,
+    });
+    
+    useEffect(() => {
+        const storedQuestions = getFromStorage<HelpQuestion[]>('sudoku-help-questions') || [];
+        setQuestions(storedQuestions);
+    }, []);
+
+    const saveQuestions = (updatedQuestions: HelpQuestion[]) => {
+        setQuestions(updatedQuestions);
+        saveToStorage('sudoku-help-questions', updatedQuestions);
+    };
+
+    const handleAddQuestion = () => {
+        if (!editingQuestion.question || editingQuestion.options?.some(o => !o)) {
+            toast({ title: "Please fill all fields", variant: "destructive" });
+            return;
+        }
+
+        const newQuestion: HelpQuestion = {
+            id: editingQuestion.id || crypto.randomUUID(),
+            ...editingQuestion,
+            question: editingQuestion.question!,
+            options: editingQuestion.options!,
+            correctAnswerIndex: editingQuestion.correctAnswerIndex!,
+        };
+
+        let updatedQuestions;
+        if(editingQuestion.id) {
+            updatedQuestions = questions.map(q => q.id === newQuestion.id ? newQuestion : q);
+            toast({ title: "Question updated!" });
+        } else {
+            updatedQuestions = [...questions, newQuestion];
+            toast({ title: "Question added!" });
+        }
+        
+        saveQuestions(updatedQuestions);
+        setEditingQuestion({ question: '', options: ['', '', '', ''], correctAnswerIndex: 0 });
+    };
+
+    const handleEdit = (question: HelpQuestion) => {
+        setEditingQuestion(question);
+    };
+
+    const handleRemoveQuestion = (id: string) => {
+        const updatedQuestions = questions.filter(q => q.id !== id);
+        saveQuestions(updatedQuestions);
+        toast({ title: "Question removed", variant: "destructive" });
+    };
+    
+    return (
+        <div className="space-y-4">
+            <h3 className="font-headline text-lg">Help Questions</h3>
+            <CardDescription>Create questions the player must answer to get a hint.</CardDescription>
+            
+            <div className="p-4 border rounded-lg space-y-4 bg-muted/50">
+                 <h4 className="font-semibold text-md">{editingQuestion.id ? 'Edit Question' : 'Add New Question'}</h4>
+                 <div className="space-y-2">
+                    <Label htmlFor="question-text">Question</Label>
+                    <Input
+                        id="question-text"
+                        value={editingQuestion.question}
+                        onChange={(e) => setEditingQuestion(prev => ({...prev, question: e.target.value}))}
+                        placeholder="e.g., ¿Cuál es nuestra canción?"
+                    />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {editingQuestion.options?.map((opt, index) => (
+                        <div key={index} className="space-y-2">
+                            <Label htmlFor={`option-${index}`}>Option {index + 1}</Label>
+                            <Input 
+                                id={`option-${index}`}
+                                value={opt}
+                                onChange={(e) => {
+                                    const newOptions = [...editingQuestion.options!];
+                                    newOptions[index] = e.target.value;
+                                    setEditingQuestion(prev => ({...prev, options: newOptions}));
+                                }}
+                                placeholder={`Answer ${index + 1}`}
+                            />
+                        </div>
+                    ))}
+                </div>
+                <div className="space-y-2">
+                    <Label>Correct Answer</Label>
+                    <RadioGroup
+                        value={String(editingQuestion.correctAnswerIndex)}
+                        onValueChange={(value) => setEditingQuestion(prev => ({...prev, correctAnswerIndex: parseInt(value, 10)}))}
+                        className="flex items-center gap-4"
+                    >
+                       {editingQuestion.options?.map((_, index) => (
+                         <div key={index} className="flex items-center space-x-2">
+                            <RadioGroupItem value={String(index)} id={`r${index}`} />
+                            <Label htmlFor={`r${index}`}>Option {index + 1}</Label>
+                        </div>
+                       ))}
+                    </RadioGroup>
+                </div>
+                 <Button onClick={handleAddQuestion}>
+                    <Save className="mr-2" /> {editingQuestion.id ? 'Update Question' : 'Save Question'}
+                </Button>
+                 {editingQuestion.id && (
+                    <Button variant="ghost" onClick={() => setEditingQuestion({ question: '', options: ['', '', '', ''], correctAnswerIndex: 0 })}>
+                        Cancel Edit
+                    </Button>
+                )}
+            </div>
+
+            <div className="space-y-2">
+                <h4 className="font-semibold">Current Questions</h4>
+                {questions.length === 0 ? <p className="text-sm text-muted-foreground">No questions yet.</p> : (
+                    <ul className="space-y-2">
+                        {questions.map((q) => (
+                            <li key={q.id} className="flex items-center justify-between p-2 rounded-md bg-background border">
+                                <span className="text-sm truncate flex-1 pr-4">{q.question}</span>
+                                <div className="flex items-center gap-2">
+                                     <Button variant="outline" size="sm" onClick={() => handleEdit(q)}>Edit</Button>
+                                     <Button variant="destructive" size="sm" onClick={() => handleRemoveQuestion(q.id)}>Remove</Button>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+        </div>
+    );
+}
+
 
 export function PhotoUploader() {
   const [selectedLevel, setSelectedLevel] = useState('1');
@@ -154,7 +291,7 @@ export function PhotoUploader() {
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
           <CardTitle className="font-headline">Customize Game</CardTitle>
-          <CardDescription>Upload reward photos, write messages, and set the background music.</CardDescription>
+          <CardDescription>Upload reward photos, write messages, set music, and create help questions.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           
@@ -176,6 +313,10 @@ export function PhotoUploader() {
                 </Button>
             </div>
           )}
+
+          <Separator className="my-6" />
+
+          <HelpQuestionsManager />
 
           <Separator className="my-6" />
 

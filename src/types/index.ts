@@ -25,3 +25,10 @@ export type PhotoData = {
 export type Photos = {
   [level: string]: PhotoData;
 };
+
+export type HelpQuestion = {
+    id: string;
+    question: string;
+    options: string[];
+    correctAnswerIndex: number;
+}
