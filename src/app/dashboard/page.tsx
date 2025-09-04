@@ -8,7 +8,7 @@ import { puzzles } from '@/lib/sudoku';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, ImageUp, Heart } from 'lucide-react';
+import { PlayCircle, ImageUp, Heart, GalleryVerticalEnd } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
@@ -62,6 +62,14 @@ function PlayerDashboard() {
       <div className="text-center">
         <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Choose a Puzzle</h2>
         <p className="text-muted-foreground mt-2">Complete a puzzle to reveal a piece of a special photo!</p>
+      </div>
+      <div className="flex justify-center mb-6">
+        <Link href="/gallery" passHref>
+            <Button variant="outline">
+                <GalleryVerticalEnd className="mr-2 h-4 w-4" />
+                View Your Gallery
+            </Button>
+        </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
         {puzzles.map((level) => (

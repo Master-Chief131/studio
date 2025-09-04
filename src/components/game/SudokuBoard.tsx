@@ -6,6 +6,7 @@ import { PhotoReveal } from './PhotoReveal';
 import { SudokuGrid } from './SudokuGrid';
 import { useRouter } from 'next/navigation';
 import { CompletionOverlay } from './CompletionOverlay';
+import { getFromStorage, saveToStorage } from '@/lib/storage';
 
 interface SudokuBoardProps {
   puzzleData: Puzzle;
@@ -40,10 +41,16 @@ export function SudokuBoard({ puzzleData, photoData }: SudokuBoardProps) {
     const allCorrect = newRevealedBlocks.every(Boolean);
     if(allCorrect) {
         // A small delay to allow the last block to reveal before showing the completion overlay
-        setTimeout(() => setIsComplete(true), 1200);
+        setTimeout(() => {
+            const completedLevels = getFromStorage<number[]>('sudoku-completed-levels') || [];
+            if (!completedLevels.includes(puzzleData.level)) {
+                saveToStorage('sudoku-completed-levels', [...completedLevels, puzzleData.level]);
+            }
+            setIsComplete(true);
+        }, 1200);
     }
 
-  }, [grid, puzzleData.solution, isComplete]); // removed revealedBlocks dependency
+  }, [grid, puzzleData.solution, isComplete, puzzleData.level, revealedBlocks]);
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
     const newGrid = grid.map((r, rowIndex) =>

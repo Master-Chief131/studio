@@ -26,7 +26,7 @@ export function CompletionOverlay({ onBack, imageUrl, message }: CompletionOverl
           )}
           onClick={() => setShowMessage(false)}
         >
-          <h2 className="font-headline text-4xl font-bold text-white">¡Felicitaciones!</h2>
+          <h2 className="font-headline text-2xl font-bold text-white">¡Recuerdo desbloquado...!</h2>
           <p className="mt-2 text-lg text-white/90 max-w-md">
             {message}
           </p>
