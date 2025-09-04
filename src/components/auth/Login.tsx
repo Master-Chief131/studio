@@ -60,7 +60,7 @@ export function Login() {
   };
 
   return (
-    <Card className="w-full max-w-sm z-10 shadow-lg">
+    <Card className="w-full max-w-sm z-10 shadow-lg bg-card/80 backdrop-blur-sm border-primary/20">
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Enter Your Name</CardTitle>
         <CardDescription>
@@ -79,6 +79,7 @@ export function Login() {
               onChange={(e) => setUsername(e.target.value)}
               required
               disabled={loading}
+              className="bg-background/80"
             />
           </div>
         </CardContent>
