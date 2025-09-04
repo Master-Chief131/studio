@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { Grid, Cell } from '@/types';
@@ -11,9 +12,10 @@ interface SudokuGridProps {
   onInputChange: (row: number, col: number, value: number | null) => void;
   helpCell: Cell | null;
   onError: () => void;
+  revealedBlocks: boolean[];
 }
 
-export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, helpCell, onError }: SudokuGridProps) {
+export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, helpCell, onError, revealedBlocks }: SudokuGridProps) {
   const [errors, setErrors] = useState<boolean[][]>(Array(9).fill(null).map(() => Array(9).fill(false)));
   const [revealedCell, setRevealedCell] = useState<Cell | null>(null);
 
@@ -44,6 +46,10 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
     }
   };
 
+  const getSubgrid = (row: number, col: number) => {
+      return Math.floor(row / 3) * 3 + Math.floor(col / 3);
+  }
+
   return (
     <div className="relative w-full h-full grid grid-cols-9 grid-rows-9 gap-0.5 p-1 sm:p-2 bg-card/0 backdrop-blur-sm rounded-lg shadow-2xl">
       {currentGrid.map((row, rowIndex) =>
@@ -52,15 +58,17 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
           const isError = errors[rowIndex][colIndex];
           const isCorrect = !isError && cell !== null && cell === solution[rowIndex][colIndex] && !isGiven;
           const isRevealed = revealedCell && revealedCell.row === rowIndex && revealedCell.col === colIndex;
+          const isSubgridRevealed = revealedBlocks[getSubgrid(rowIndex, colIndex)];
 
           return (
             <div
               key={`${rowIndex}-${colIndex}`}
               className={cn(
-                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-colors duration-500",
+                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-1000",
                 (colIndex + 1) % 3 === 0 && colIndex < 8 && "border-r-2 border-r-primary/50",
                 (rowIndex + 1) % 3 === 0 && rowIndex < 8 && "border-b-2 border-b-primary/50",
-                isRevealed && "bg-accent/50"
+                isRevealed && "bg-accent/50",
+                isSubgridRevealed && "bg-transparent border-transparent"
               )}
             >
               <input
@@ -72,10 +80,11 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
                 onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
                 readOnly={isGiven}
                 className={cn(
-                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none focus:ring-2 focus:ring-accent focus:z-10 rounded-sm sm:rounded-md',
+                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none focus:ring-2 focus:ring-accent focus:z-10 rounded-sm sm:rounded-md transition-colors duration-1000',
                   isGiven ? 'text-primary-foreground/80' : 'text-accent-foreground',
                   isError && 'text-destructive',
                   (isCorrect || isRevealed) && 'text-green-600',
+                  isSubgridRevealed && 'text-transparent'
                 )}
                 aria-label={`Celda F${rowIndex + 1}C${colIndex + 1}`}
               />

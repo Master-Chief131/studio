@@ -40,7 +40,7 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
   useEffect(() => {
     if (isComplete || gameState.isGameOver) return;
 
-    const newRevealedBlocks = revealedBlocks.map((_, index) => checkSubgrid(index));
+    const newRevealedBlocks = Array.from({ length: 9 }).map((_, index) => checkSubgrid(index));
     setRevealedBlocks(newRevealedBlocks);
 
     const allCorrect = newRevealedBlocks.every(Boolean);
@@ -74,6 +74,7 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
           onInputChange={handleInputChange}
           helpCell={helpCell}
           onError={onError}
+          revealedBlocks={revealedBlocks}
         />
       )}
       {isComplete && photoData && (
