@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -13,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useEffect, useState } from 'react';
 import { getFromStorage } from '@/lib/storage';
 import { cn } from '@/lib/utils';
+import type { Photos } from '@/types';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -59,18 +61,24 @@ function AdminDashboard() {
   );
 }
 
-const levelDescriptions = [
-    "Este juego fue creado especialmente para ti.",
-    "Cada nivel completado revelará una sorpresa especial.",
-    "¿Lista para descubrir qué he preparado para ti?"
-];
+const defaultLevelDescriptions: {[key: string]: string} = {
+  '1': "Este juego fue creado especialmente para ti.",
+  '2': "Cada nivel completado revelará una sorpresa especial.",
+  '3': "¿Lista para descubrir qué he preparado para ti?",
+  '4': "Un nuevo desafío te espera.",
+  '5': "El último secreto está a punto de ser revelado."
+};
+
 
 function PlayerDashboard() {
   const [completedLevels, setCompletedLevels] = useState<number[]>([]);
+  const [photos, setPhotos] = useState<Photos>({});
 
   useEffect(() => {
     const storedCompleted = getFromStorage<number[]>('sudoku-completed-levels') || [];
     setCompletedLevels(storedCompleted);
+    const storedPhotos = getFromStorage<Photos>('sudoku-photos') || {};
+    setPhotos(storedPhotos);
   }, []);
 
   const maxUnlockedLevel = completedLevels.length > 0 
@@ -95,17 +103,19 @@ function PlayerDashboard() {
         {puzzles.map((level, index) => {
           const isUnlocked = level.level <= maxUnlockedLevel;
           const isCompleted = completedLevels.includes(level.level);
+          const levelData = photos[String(level.level)];
+          const description = levelData?.description || defaultLevelDescriptions[String(level.level)] || 'Un nuevo reto te espera.';
           
           return (
             <Card 
               key={level.level} 
               data-state={isUnlocked ? 'unlocked' : 'locked'}
               className={cn(
-                "transition-all duration-200",
+                "transition-all duration-200 flex flex-col",
                 isUnlocked ? "hover:shadow-lg hover:-translate-y-1" : "bg-muted/60"
               )}
             >
-              <CardHeader>
+              <CardHeader className="flex-grow">
                 <CardTitle className="flex items-center justify-between">
                   <span className='font-headline'>Nivel {level.level}</span>
                    {!isUnlocked ? (
@@ -118,7 +128,7 @@ function PlayerDashboard() {
                   )}
                 </CardTitle>
                 <CardDescription>
-                  {isUnlocked ? levelDescriptions[index % levelDescriptions.length] : 'Completa el nivel anterior para desbloquear'}
+                  {isUnlocked ? description : 'Completa el nivel anterior para desbloquear'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -126,7 +136,7 @@ function PlayerDashboard() {
                   <Button 
                     className="w-full bg-accent text-accent-foreground hover:bg-accent/90" 
                     disabled={!isUnlocked}
-                    aria-disabled={!isUnlocked}
+                    aria-label={isUnlocked ? (isCompleted ? `Jugar de nuevo el nivel ${level.level}` : `Empezar a jugar el nivel ${level.level}`) : `Nivel ${level.level} bloqueado`}
                   >
                     <PlayCircle className="mr-2 h-4 w-4" />
                     {isCompleted ? 'Jugar de Nuevo' : 'Empezar a Jugar'}

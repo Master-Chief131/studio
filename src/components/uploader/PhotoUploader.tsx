@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -26,7 +27,15 @@ const defaultMessages: {[key: string]: string} = {
     '3': 'Nuestra primera aventura...',
     '4': 'Solo tú y yo...',
     '5': 'Mi lugar favorito es a tu lado.'
-}
+};
+
+const defaultLevelDescriptions: {[key: string]: string} = {
+  '1': "Este juego fue creado especialmente para ti.",
+  '2': "Cada nivel completado revelará una sorpresa especial.",
+  '3': "¿Lista para descubrir qué he preparado para ti?",
+  '4': "Un nuevo desafío te espera.",
+  '5': "El último secreto está a punto de ser revelado."
+};
 
 function HelpQuestionsManager() {
     const { toast } = useToast();
@@ -165,17 +174,16 @@ function HelpQuestionsManager() {
 
 export function PhotoUploader() {
   const [selectedLevel, setSelectedLevel] = useState('1');
-  const [currentMessage, setCurrentMessage] = useState(defaultMessages['1'] || '');
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [currentDescription, setCurrentDescription] = useState('');
   const [photos, setPhotos] = useState<Photos>({});
   const [backgroundMusic, setBackgroundMusic] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState<PhotoData | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedPhotos = getFromStorage<Photos>('sudoku-photos');
-    if (storedPhotos) {
-      setPhotos(storedPhotos);
-    }
+    const storedPhotos = getFromStorage<Photos>('sudoku-photos') || {};
+    setPhotos(storedPhotos);
     const storedMusic = getFromStorage<string>('sudoku-background-music');
     if(storedMusic) {
         setBackgroundMusic(storedMusic);
@@ -184,6 +192,7 @@ export function PhotoUploader() {
 
   useEffect(() => {
     setCurrentMessage(photos[selectedLevel]?.message || defaultMessages[selectedLevel] || '');
+    setCurrentDescription(photos[selectedLevel]?.description || defaultLevelDescriptions[selectedLevel] || '');
   }, [selectedLevel, photos]);
 
   const handleSaveData = (level: string, data: Partial<PhotoData>) => {
@@ -191,13 +200,24 @@ export function PhotoUploader() {
     const newData: PhotoData = {
         imageUrl: data.imageUrl || existingData.imageUrl || '',
         message: 'message' in data ? data.message! : existingData.message || defaultMessages[level] || '',
+        description: 'description' in data ? data.description! : existingData.description || defaultLevelDescriptions[level] || '',
     };
 
-    if(!newData.imageUrl) return; // Don't save if there's no image
+    if(!newData.imageUrl) {
+        toast({
+            title: "Primero sube una imagen",
+            description: "No se pueden guardar los textos si no hay una imagen para el nivel.",
+            variant: "destructive"
+        });
+        return;
+    }
 
     const newPhotos = { ...photos, [level]: newData };
     setPhotos(newPhotos);
     saveToStorage('sudoku-photos', newPhotos);
+    toast({
+        title: `¡Datos del Nivel ${level} actualizados!`,
+    });
   };
 
 
@@ -215,25 +235,22 @@ export function PhotoUploader() {
       const reader = new FileReader();
       reader.onloadend = () => {
         const imageUrl = reader.result as string;
-        handleSaveData(selectedLevel, { imageUrl, message: currentMessage });
-        toast({
-            title: `¡Foto para el Nivel ${selectedLevel} actualizada!`,
-            description: "El jugador verá esta imagen y mensaje."
-        });
+        handleSaveData(selectedLevel, { imageUrl, message: currentMessage, description: currentDescription });
       };
       reader.readAsDataURL(file);
     }
   };
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newMessage = e.target.value;
-    setCurrentMessage(newMessage);
-    if(photos[selectedLevel]?.imageUrl){
-        handleSaveData(selectedLevel, { message: newMessage });
-        toast({
-            title: `¡Mensaje para el Nivel ${selectedLevel} actualizado!`,
-        });
-    }
+    setCurrentMessage(e.target.value);
+  }
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setCurrentDescription(e.target.value);
+  }
+  
+  const handleTextSave = () => {
+    handleSaveData(selectedLevel, { message: currentMessage, description: currentDescription });
   }
 
   const handleRemovePhoto = (level: string) => {
@@ -322,7 +339,7 @@ export function PhotoUploader() {
           <Separator className="my-6" />
 
           <h3 className="font-headline text-lg">Personalizar Niveles</h3>
-          <CardDescription>Selecciona un nivel para subir una foto de recompensa y escribir un mensaje especial.</CardDescription>
+          <CardDescription>Selecciona un nivel para subir una foto, escribir un mensaje y una descripción.</CardDescription>
           
           <div className='space-y-2 mb-4 pt-4'>
              <Label htmlFor="level-select">Nivel</Label>
@@ -339,21 +356,37 @@ export function PhotoUploader() {
                 </SelectContent>
               </Select>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="space-y-2 flex-1">
-              <Label htmlFor="photo-upload">Archivo de Foto</Label>
+            <div className="space-y-2">
+              <Label htmlFor="photo-upload">Archivo de Foto (Recompensa)</Label>
               <Input id="photo-upload" type="file" accept="image/*" onChange={handleFileChange} />
             </div>
-             <div className="space-y-2 flex-1">
-                <Label htmlFor="completion-message">Mensaje de Finalización</Label>
-                <Textarea
-                    id="completion-message"
-                    placeholder={`Ej., ${defaultMessages[selectedLevel]}`}
-                    value={currentMessage}
-                    onChange={handleMessageChange}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="level-description">Descripción del Nivel (en el tablero)</Label>
+                    <Textarea
+                        id="level-description"
+                        placeholder={`Ej., ${defaultLevelDescriptions[selectedLevel]}`}
+                        value={currentDescription}
+                        onChange={handleDescriptionChange}
+                        rows={3}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="completion-message">Mensaje de Finalización (al completar)</Label>
+                    <Textarea
+                        id="completion-message"
+                        placeholder={`Ej., ${defaultMessages[selectedLevel]}`}
+                        value={currentMessage}
+                        onChange={handleMessageChange}
+                        rows={3}
+                    />
+                </div>
             </div>
-          </div>
+            <Button onClick={handleTextSave}>
+                <Save className="mr-2" />
+                Guardar Textos del Nivel {selectedLevel}
+            </Button>
+
 
           <h3 className="font-headline text-lg pt-4">Niveles Actuales</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -400,7 +433,7 @@ export function PhotoUploader() {
       </Card>
       {previewing && (
         <Dialog open={!!previewing} onOpenChange={(isOpen) => !isOpen && setPreviewing(null)}>
-            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-describedby={undefined}>
+            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-describedby={previewing.message}>
                 <VisuallyHidden>
                   <VisuallyHiddenTitle>Vista Previa del Recuerdo</VisuallyHiddenTitle>
                   <DialogDescription>{previewing.message}</DialogDescription>

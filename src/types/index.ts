@@ -21,6 +21,7 @@ export type Puzzle = {
 export type PhotoData = {
   imageUrl: string;
   message: string;
+  description: string;
 };
 
 export type Photos = {
