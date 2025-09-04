@@ -91,3 +91,25 @@ body {
   50% { transform: translateY(-25px) rotate(-5deg); opacity: 0.7; }
   100% { transform: translateY(0) rotate(5deg); opacity: 0.5; }
 }
+
+
+@keyframes fall-and-fade {
+  from {
+    transform: translateY(-10vh) rotate(-15deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(110vh) rotate(15deg);
+    opacity: 0;
+  }
+}
+
+@keyframes side-to-side-1 {
+  0%, 100% { margin-left: 0; }
+  50% { margin-left: 20px; }
+}
+
+@keyframes side-to-side-2 {
+  0%, 100% { margin-left: 0; }
+  50% { margin-left: -20px; }
+}

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Login } from '@/components/auth/Login';
-import { Heart } from 'lucide-react';
+import { Heart, Flower, Dna } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -12,9 +12,18 @@ const easterEggMessages = [
     "Esa curiosidad tuya me encanta ❤️"
 ];
 
+const easterEggIcons = [
+    { Icon: Heart, color: "text-primary/70", size: "h-8 w-8" },
+    { Icon: Heart, color: "text-green-400/70", size: "h-10 w-10" },
+    { Icon: Heart, color: "text-sky-400/70", size: "h-6 w-6" },
+    { Icon: Flower, color: "text-pink-400/70", size: "h-8 w-8" }, // Tulipán
+    { Icon: Dna, color: "text-green-500/70", size: "h-8 w-8", transform: "rotate-45" }, // Dinosaurio improvisado
+];
+
 export default function LoginPage() {
   const { toast } = useToast();
   const [clickCount, setClickCount] = useState(0);
+  const [raining, setRaining] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleTitleClick = () => {
@@ -25,11 +34,13 @@ export default function LoginPage() {
     const newClickCount = clickCount + 1;
     setClickCount(newClickCount);
 
-    if (newClickCount >= 5) {
+    if (newClickCount >= 5 && !raining) {
+        setRaining(true);
         const randomMessage = easterEggMessages[Math.floor(Math.random() * easterEggMessages.length)];
         toast({
             title: randomMessage,
         });
+        setTimeout(() => setRaining(false), 8000); // Detener la lluvia después de 8 segundos
         setClickCount(0);
     }
 
@@ -40,6 +51,30 @@ export default function LoginPage() {
   
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background overflow-hidden p-4">
+       {raining && Array.from({ length: 25 }).map((_, i) => {
+         const item = easterEggIcons[i % easterEggIcons.length];
+         const animationDuration = `${Math.random() * 5 + 5}s`; // 5s to 10s
+         const animationDelay = `${Math.random() * 5}s`; // 0s to 5s
+         const leftPosition = `${Math.random() * 100}vw`;
+         const animationName = `fall-and-fade, side-to-side-${i % 2 + 1}`;
+
+         return (
+            <item.Icon 
+                key={i} 
+                className={cn("absolute -top-12 animate-fall-and-fade", item.color, item.size)}
+                style={{
+                    left: leftPosition,
+                    animationName,
+                    animationDuration: `${animationDuration}, 3s`,
+                    animationDelay,
+                    animationTimingFunction: 'linear, ease-in-out',
+                    animationIterationCount: 'infinite, infinite',
+                    transform: item.transform,
+                }}
+            />
+         )
+       })}
+
       <div className="absolute inset-0 pointer-events-none">
         <Heart 
           className="absolute -left-20 -top-20 h-72 w-72 text-primary/20"
