@@ -8,6 +8,7 @@ import { SudokuGrid } from './SudokuGrid';
 import { useRouter } from 'next/navigation';
 import { CompletionOverlay } from './CompletionOverlay';
 import { getFromStorage, saveToStorage } from '@/lib/storage';
+import { NumberPad } from './NumberPad';
 
 interface SudokuBoardProps {
   puzzleData: Puzzle;
@@ -17,12 +18,43 @@ interface SudokuBoardProps {
   helpCell: Cell | null;
   gameState: GameState;
   onError: () => void;
+  selectedCell: Cell | null;
+  setSelectedCell: (cell: Cell | null) => void;
 }
 
-export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid, helpCell, gameState, onError }: SudokuBoardProps) {
+export function SudokuBoard({ 
+    puzzleData, 
+    photoData, 
+    currentGrid, 
+    setCurrentGrid, 
+    helpCell, 
+    gameState, 
+    onError,
+    selectedCell,
+    setSelectedCell 
+}: SudokuBoardProps) {
   const [revealedBlocks, setRevealedBlocks] = useState<boolean[]>(Array(9).fill(false));
   const [isComplete, setIsComplete] = useState(false);
   const router = useRouter();
+
+  const handleInputChange = (row: number, col: number, value: number | null) => {
+    const newGrid = currentGrid.map((r, rowIndex) =>
+      r.map((cell, colIndex) => (rowIndex === row && colIndex === col ? value : cell))
+    );
+    setCurrentGrid(newGrid);
+  };
+
+  const handleNumberPadClick = (number: number) => {
+    if (selectedCell) {
+      handleInputChange(selectedCell.row, selectedCell.col, number);
+    }
+  }
+
+  const handleEraseClick = () => {
+      if (selectedCell) {
+        handleInputChange(selectedCell.row, selectedCell.col, null);
+      }
+  }
 
   const checkSubgrid = (subgridIndex: number): boolean => {
     const startRow = Math.floor(subgridIndex / 3) * 3;
@@ -55,35 +87,38 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
     }
 
   }, [currentGrid, puzzleData.solution, isComplete, puzzleData.level, gameState.isGameOver]);
-
-  const handleInputChange = (row: number, col: number, value: number | null) => {
-    const newGrid = currentGrid.map((r, rowIndex) =>
-      r.map((cell, colIndex) => (rowIndex === row && colIndex === col ? value : cell))
-    );
-    setCurrentGrid(newGrid);
-  };
   
   return (
-    <div className="relative w-full max-w-xl aspect-square">
-      <PhotoReveal imageUrl={photoData?.imageUrl || null} revealedBlocks={revealedBlocks} isComplete={isComplete}/>
-      {!isComplete && !gameState.isGameOver && (
-        <SudokuGrid 
-          initialGrid={puzzleData.puzzle} 
-          currentGrid={currentGrid}
-          solution={puzzleData.solution}
-          onInputChange={handleInputChange}
-          helpCell={helpCell}
-          onError={onError}
-          revealedBlocks={revealedBlocks}
-        />
-      )}
-      {isComplete && photoData && (
-        <CompletionOverlay
-          imageUrl={photoData.imageUrl}
-          message={photoData.message}
-          onBack={() => router.push('/dashboard')}
-        />
-      )}
+    <div className="flex flex-col items-center">
+        <div className="relative w-full max-w-xl aspect-square">
+        <PhotoReveal imageUrl={photoData?.imageUrl || null} revealedBlocks={revealedBlocks} isComplete={isComplete}/>
+        {!isComplete && !gameState.isGameOver && (
+            <SudokuGrid 
+            initialGrid={puzzleData.puzzle} 
+            currentGrid={currentGrid}
+            solution={puzzleData.solution}
+            onInputChange={handleInputChange}
+            helpCell={helpCell}
+            onError={onError}
+            revealedBlocks={revealedBlocks}
+            selectedCell={selectedCell}
+            setSelectedCell={setSelectedCell}
+            />
+        )}
+        {isComplete && photoData && (
+            <CompletionOverlay
+            imageUrl={photoData.imageUrl}
+            message={photoData.message}
+            onBack={() => router.push('/dashboard')}
+            />
+        )}
+        </div>
+        {!isComplete && !gameState.isGameOver && (
+            <NumberPad 
+                onNumberClick={handleNumberPadClick}
+                onEraseClick={handleEraseClick}
+            />
+        )}
     </div>
   );
 }

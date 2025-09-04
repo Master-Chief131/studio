@@ -13,9 +13,21 @@ interface SudokuGridProps {
   helpCell: Cell | null;
   onError: () => void;
   revealedBlocks: boolean[];
+  selectedCell: Cell | null;
+  setSelectedCell: (cell: Cell | null) => void;
 }
 
-export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, helpCell, onError, revealedBlocks }: SudokuGridProps) {
+export function SudokuGrid({ 
+    initialGrid, 
+    currentGrid, 
+    solution, 
+    onInputChange, 
+    helpCell, 
+    onError, 
+    revealedBlocks,
+    selectedCell,
+    setSelectedCell
+}: SudokuGridProps) {
   const [errors, setErrors] = useState<boolean[][]>(Array(9).fill(null).map(() => Array(9).fill(false)));
   const [revealedCell, setRevealedCell] = useState<Cell | null>(null);
 
@@ -46,6 +58,13 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
     }
   };
 
+  const handleFocus = (row: number, col: number) => {
+    const isGiven = initialGrid[rowIndex][colIndex] !== null;
+    if (!isGiven) {
+        setSelectedCell({ row, col });
+    }
+  }
+
   const getSubgrid = (row: number, col: number) => {
       return Math.floor(row / 3) * 3 + Math.floor(col / 3);
   }
@@ -59,6 +78,7 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
           const isCorrect = !isError && cell !== null && cell === solution[rowIndex][colIndex] && !isGiven;
           const isRevealed = revealedCell && revealedCell.row === rowIndex && revealedCell.col === colIndex;
           const isSubgridRevealed = revealedBlocks[getSubgrid(rowIndex, colIndex)];
+          const isSelected = selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex;
 
           return (
             <div
@@ -68,7 +88,8 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
                 (colIndex + 1) % 3 === 0 && colIndex < 8 && "border-r-2 border-r-primary/50",
                 (rowIndex + 1) % 3 === 0 && rowIndex < 8 && "border-b-2 border-b-primary/50",
                 isRevealed && "bg-accent/50",
-                isSubgridRevealed && "bg-transparent border-transparent"
+                isSubgridRevealed && "bg-transparent border-transparent",
+                isSelected && !isGiven && "bg-accent/30"
               )}
             >
               <input
@@ -78,10 +99,12 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
                 maxLength={1}
                 value={cell || ''}
                 onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
+                onFocus={() => handleFocus(rowIndex, colIndex)}
                 readOnly={isGiven}
                 className={cn(
-                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none focus:ring-2 focus:ring-accent focus:z-10 rounded-sm sm:rounded-md transition-colors duration-1000',
-                  isGiven ? 'text-primary-foreground/80' : 'text-accent-foreground',
+                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000',
+                   isGiven ? 'text-primary-foreground/80' : 'text-accent-foreground',
+                  isSelected && !isGiven ? 'ring-2 ring-accent z-10' : '',
                   isError && 'text-destructive',
                   (isCorrect || isRevealed) && 'text-green-600',
                   isSubgridRevealed && 'text-white'

@@ -1,9 +1,8 @@
 
-
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
 import { getFromStorage } from '@/lib/storage';
@@ -40,6 +39,7 @@ export default function PlayPage() {
 
   // Game State
   const [gameState, setGameState] = useState<GameState>({ lives: 3, isGameOver: false });
+  const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 
   // Help Questions State
   const [questions, setQuestions] = useState<HelpQuestion[]>([]);
@@ -235,6 +235,8 @@ export default function PlayPage() {
             helpCell={helpCell}
             gameState={gameState}
             onError={handleError}
+            selectedCell={selectedCell}
+            setSelectedCell={setSelectedCell}
           />
         </main>
       </div>
