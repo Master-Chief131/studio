@@ -66,11 +66,11 @@ export function PhotoUploader() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if(file.size > 2 * 1024 * 1024) { // 2MB limit
+      if(file.size > 1 * 1024 * 1024) { // 1MB limit
         toast({
           variant: "destructive",
           title: "Image too large",
-          description: "Please select an image smaller than 2MB."
+          description: "Please select an image smaller than 1MB."
         });
         return;
       }
@@ -118,11 +118,11 @@ export function PhotoUploader() {
   const handleMusicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) { // 10MB limit for audio
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit for audio
         toast({
           variant: "destructive",
           title: "Audio file too large",
-          description: "Please select a file smaller than 10MB."
+          description: "Please select a file smaller than 2MB."
         });
         return;
       }
@@ -223,7 +223,7 @@ export function PhotoUploader() {
                 <CardContent className="flex items-center justify-center aspect-square bg-muted rounded-b-lg">
                   {photos[p.level]?.imageUrl ? (
                     <>
-                      <Image src={photos[p.level].imageUrl} alt={`Level ${p.level} photo`} width={300} height={300} className="object-cover w-full h-full rounded-b-lg" />
+                      <Image src={photos[p.level].imageUrl} alt={`Level ${p.level} photo`} width={150} height={150} className="object-cover w-full h-full rounded-b-lg" />
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                         <Button
                             variant="secondary"
