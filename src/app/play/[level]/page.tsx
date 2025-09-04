@@ -18,30 +18,35 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        router.push('/');
-      } else {
-        const level = parseInt(params.level, 10);
-        if (isNaN(level)) {
-            router.push('/dashboard');
-            return;
-        }
-
-        const puzzle = getPuzzle(level);
-        const photos = getFromStorage<Photos>('sudoku-photos');
-        
-        if (puzzle) {
-          setPuzzleData(puzzle);
-          if (photos && photos[level]) {
-            setPhotoData(photos[level]);
-          }
-        } else {
-            router.push('/dashboard');
-        }
-        setLoading(false);
-      }
+    if (authLoading) {
+      return;
     }
+    if (!user) {
+      router.push('/');
+      return;
+    }
+    
+    const levelStr = params.level;
+    const level = parseInt(levelStr, 10);
+    
+    if (isNaN(level)) {
+        router.push('/dashboard');
+        return;
+    }
+
+    const puzzle = getPuzzle(level);
+    const photos = getFromStorage<Photos>('sudoku-photos');
+    
+    if (puzzle) {
+      setPuzzleData(puzzle);
+      if (photos && photos[level]) {
+        setPhotoData(photos[level]);
+      }
+    } else {
+        router.push('/dashboard');
+    }
+    setLoading(false);
+
   }, [params.level, router, user, authLoading]);
 
   if (authLoading || loading) {
