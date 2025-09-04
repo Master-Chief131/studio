@@ -8,8 +8,11 @@ import { puzzles } from '@/lib/sudoku';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, GalleryVerticalEnd, Heart } from 'lucide-react';
+import { PlayCircle, GalleryVerticalEnd, Heart, Lock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from 'react';
+import { getFromStorage } from '@/lib/storage';
+import { cn } from '@/lib/utils';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -63,6 +66,16 @@ const levelDescriptions = [
 ];
 
 function PlayerDashboard() {
+  const [completedLevels, setCompletedLevels] = useState<number[]>([]);
+
+  useEffect(() => {
+    const storedCompleted = getFromStorage<number[]>('sudoku-completed-levels') || [];
+    setCompletedLevels(storedCompleted);
+  }, []);
+
+  const maxUnlockedLevel = completedLevels.length > 0 
+    ? Math.max(...completedLevels, 0) + 1 
+    : 1;
 
   return (
     <div className="space-y-8">
@@ -79,28 +92,50 @@ function PlayerDashboard() {
         </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-        {puzzles.map((level, index) => (
-          <Card key={level.level} className="hover:shadow-lg hover:-translate-y-1 transition-transform duration-200">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className='font-headline'>Nivel {level.level}</span>
-                <div className="flex">
-                    {Array.from({length: level.level}).map((_,i) => <Heart key={i} className="h-4 w-4 text-primary fill-current" />)}
-                    {Array.from({length: 5 - level.level}).map((_,i) => <Heart key={i} className="h-4 w-4 text-primary/30" />)}
-                </div>
-              </CardTitle>
-              <CardDescription>{levelDescriptions[index % levelDescriptions.length]}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href={`/play/${level.level}`} passHref>
-                <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                  <PlayCircle className="mr-2 h-4 w-4" />
-                  Empezar a Jugar
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        ))}
+        {puzzles.map((level, index) => {
+          const isUnlocked = level.level <= maxUnlockedLevel;
+          const isCompleted = completedLevels.includes(level.level);
+          
+          return (
+            <Card 
+              key={level.level} 
+              data-state={isUnlocked ? 'unlocked' : 'locked'}
+              className={cn(
+                "transition-all duration-200",
+                isUnlocked ? "hover:shadow-lg hover:-translate-y-1" : "bg-muted/60"
+              )}
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <span className='font-headline'>Nivel {level.level}</span>
+                   {!isUnlocked ? (
+                    <Lock className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <div className="flex">
+                        {Array.from({length: level.level}).map((_,i) => <Heart key={i} className="h-4 w-4 text-primary fill-current" />)}
+                        {Array.from({length: 5 - level.level}).map((_,i) => <Heart key={i} className="h-4 w-4 text-primary/30" />)}
+                    </div>
+                  )}
+                </CardTitle>
+                <CardDescription>
+                  {isUnlocked ? levelDescriptions[index % levelDescriptions.length] : 'Completa el nivel anterior para desbloquear'}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Link href={isUnlocked ? `/play/${level.level}` : '#'} passHref>
+                  <Button 
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90" 
+                    disabled={!isUnlocked}
+                    aria-disabled={!isUnlocked}
+                  >
+                    <PlayCircle className="mr-2 h-4 w-4" />
+                    {isCompleted ? 'Jugar de Nuevo' : 'Empezar a Jugar'}
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
     </div>
   );
