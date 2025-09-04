@@ -25,7 +25,7 @@ export function PhotoReveal({ imageUrl, revealedBlocks, isComplete }: PhotoRevea
 
   return (
     <div className="absolute inset-0 rounded-lg overflow-hidden shadow-lg">
-      <Image src={imageUrl} alt="Surprise photo" width={500} height={500} objectFit="cover" />
+      <Image src={imageUrl} alt="Surprise photo" layout="fill" objectFit="cover" className={cn(isComplete ? 'opacity-100' : 'opacity-80', 'transition-opacity duration-1000')} />
       <div className="absolute inset-0 grid grid-cols-3 grid-rows-3">
         {revealedBlocks.map((isRevealed, index) => (
           <div
