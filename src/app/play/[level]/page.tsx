@@ -17,6 +17,8 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const levelStr = params.level;
+
   useEffect(() => {
     if (authLoading) {
       return;
@@ -26,7 +28,6 @@ export default function PlayPage({ params }: { params: { level: string } }) {
       return;
     }
     
-    const levelStr = params.level;
     const level = parseInt(levelStr, 10);
     
     if (isNaN(level)) {
@@ -47,7 +48,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
     }
     setLoading(false);
 
-  }, [params.level, router, user, authLoading]);
+  }, [levelStr, router, user, authLoading]);
 
   if (authLoading || loading) {
     return (
