@@ -10,7 +10,7 @@ export default function LoginPage() {
       </div>
       <div className="z-10 text-center mb-8">
         <h1 className="font-headline text-5xl md:text-7xl font-bold text-primary-foreground/90">SudokuLove</h1>
-        <p className="mt-2 text-lg text-muted-foreground">A special puzzle for my special someone.</p>
+        <p className="mt-2 text-lg text-muted-foreground">Un Sudoku especial para mi persona especial, con mucho amor para Abby</p>
       </div>
       <Login />
     </div>
