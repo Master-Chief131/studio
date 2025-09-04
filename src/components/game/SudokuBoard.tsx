@@ -44,13 +44,11 @@ export function SudokuBoard({
     );
     setCurrentGrid(newGrid);
 
-    // Validation logic moved here
     const newErrors = errors.map(r => [...r]);
     if (value !== null && value !== puzzleData.solution[row][col]) {
-      if (!errors[row][col]) {
-        onError();
-        newErrors[row][col] = true;
-      }
+      // Siempre que el valor sea incorrecto, llamamos a onError.
+      onError(); 
+      newErrors[row][col] = true;
     } else {
       newErrors[row][col] = false;
     }
@@ -59,13 +57,19 @@ export function SudokuBoard({
 
   const handleNumberPadClick = (number: number) => {
     if (selectedCell) {
-      handleInputChange(selectedCell.row, selectedCell.col, number);
+      // Do not allow overwriting correct original numbers
+      if(puzzleData.puzzle[selectedCell.row][selectedCell.col] === null) {
+          handleInputChange(selectedCell.row, selectedCell.col, number);
+      }
     }
   }
 
   const handleEraseClick = () => {
       if (selectedCell) {
-        handleInputChange(selectedCell.row, selectedCell.col, null);
+        // Do not allow erasing original numbers
+        if(puzzleData.puzzle[selectedCell.row][selectedCell.col] === null) {
+            handleInputChange(selectedCell.row, selectedCell.col, null);
+        }
       }
   }
 
