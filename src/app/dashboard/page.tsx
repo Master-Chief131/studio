@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { PlayCircle, ImageUp, Heart, GalleryVerticalEnd } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEffect, useState } from 'react';
+import { getFromStorage } from '@/lib/storage';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -48,8 +50,8 @@ function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Photo Manager</h2>
-        <p className="text-muted-foreground mt-2">Upload a photo for each Sudoku level to create a special surprise.</p>
+        <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Game Manager</h2>
+        <p className="text-muted-foreground mt-2">Manage photos, messages, and background music.</p>
       </div>
       <PhotoUploader />
     </div>
@@ -57,19 +59,28 @@ function AdminDashboard() {
 }
 
 function PlayerDashboard() {
+  const [music, setMusic] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMusic(getFromStorage('sudoku-background-music'));
+  }, []);
+
   return (
     <div className="space-y-8">
       <div className="text-center">
         <h2 className="font-headline text-4xl font-bold text-primary-foreground/90">Choose a Puzzle</h2>
         <p className="text-muted-foreground mt-2">Complete a puzzle to reveal a piece of a special photo!</p>
       </div>
-      <div className="flex justify-center mb-6">
+      <div className="flex justify-center items-center gap-4 mb-6">
         <Link href="/gallery" passHref>
             <Button variant="outline">
                 <GalleryVerticalEnd className="mr-2 h-4 w-4" />
                 View Your Gallery
             </Button>
         </Link>
+        {music && (
+            <audio src={music} controls autoPlay loop className="h-8" />
+        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
         {puzzles.map((level) => (

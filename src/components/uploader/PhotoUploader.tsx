@@ -11,10 +11,11 @@ import type { Photos, PhotoData } from '@/types';
 import Image from 'next/image';
 import { puzzles } from '@/lib/sudoku';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Trash2, Eye } from 'lucide-react';
+import { Upload, Trash2, Eye, Music, X } from 'lucide-react';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Textarea } from '../ui/textarea';
+import { Separator } from '../ui/separator';
 
 const defaultMessages: {[key: string]: string} = {
     '1': 'Recuerdas cuando...',
@@ -28,6 +29,7 @@ export function PhotoUploader() {
   const [selectedLevel, setSelectedLevel] = useState('1');
   const [currentMessage, setCurrentMessage] = useState(defaultMessages['1'] || '');
   const [photos, setPhotos] = useState<Photos>({});
+  const [backgroundMusic, setBackgroundMusic] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState<PhotoData | null>(null);
   const { toast } = useToast();
 
@@ -35,6 +37,10 @@ export function PhotoUploader() {
     const storedPhotos = getFromStorage<Photos>('sudoku-photos');
     if (storedPhotos) {
       setPhotos(storedPhotos);
+    }
+    const storedMusic = getFromStorage<string>('sudoku-background-music');
+    if(storedMusic) {
+        setBackgroundMusic(storedMusic);
     }
   }, []);
 
@@ -109,15 +115,74 @@ export function PhotoUploader() {
     }
   }
 
+  const handleMusicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit for audio
+        toast({
+          variant: "destructive",
+          title: "Audio file too large",
+          description: "Please select a file smaller than 10MB."
+        });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const musicDataUrl = reader.result as string;
+        setBackgroundMusic(musicDataUrl);
+        saveToStorage('sudoku-background-music', musicDataUrl);
+        toast({
+          title: "Background music updated!",
+          description: "The player will hear this music in their session."
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveMusic = () => {
+      setBackgroundMusic(null);
+      saveToStorage('sudoku-background-music', null);
+      toast({
+        title: "Background music removed.",
+        variant: "destructive"
+      });
+  }
+
   return (
     <>
       <Card className="max-w-3xl mx-auto">
         <CardHeader>
-          <CardTitle className="font-headline">Customize Levels</CardTitle>
-          <CardDescription>Select a level to upload a reward photo and write a special message.</CardDescription>
+          <CardTitle className="font-headline">Customize Game</CardTitle>
+          <CardDescription>Upload reward photos, write messages, and set the background music.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className='space-y-2 mb-4'>
+          
+          <h3 className="font-headline text-lg pt-4 border-t">Background Music</h3>
+          <div className="space-y-2">
+            <Label htmlFor="music-upload">Audio File (MP3, WAV, etc.)</Label>
+            <Input id="music-upload" type="file" accept="audio/*" onChange={handleMusicUpload} />
+          </div>
+          {backgroundMusic && (
+             <div className="flex items-center gap-4 p-2 rounded-md bg-muted">
+                <Music className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                    <p className="text-sm font-medium">Music is set.</p>
+                    <p className="text-xs text-muted-foreground">Players will hear this in the background.</p>
+                </div>
+                <audio src={backgroundMusic} controls className='h-8'/>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleRemoveMusic}>
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
+          )}
+
+          <Separator className="my-6" />
+
+          <h3 className="font-headline text-lg">Customize Levels</h3>
+          <CardDescription>Select a level to upload a reward photo and write a special message.</CardDescription>
+          
+          <div className='space-y-2 mb-4 pt-4'>
              <Label htmlFor="level-select">Level</Label>
               <Select value={selectedLevel} onValueChange={setSelectedLevel}>
                 <SelectTrigger id="level-select">
