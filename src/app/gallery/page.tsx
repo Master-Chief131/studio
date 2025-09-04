@@ -11,7 +11,6 @@ import { CompletionOverlay } from '@/components/game/CompletionOverlay';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Image from 'next/image';
 import type { PhotoData, Photos } from '@/types';
-import { puzzles } from '@/lib/sudoku';
 import { ArrowLeft, Maximize } from 'lucide-react';
 
 type UnlockedPhoto = PhotoData & {
@@ -34,9 +33,10 @@ export default function GalleryPage() {
       const photos: UnlockedPhoto[] = completedLevels
         .sort((a, b) => a - b)
         .map(level => {
-          if (allPhotos[level]) {
+          const photoData = allPhotos[String(level)];
+          if (photoData) {
             return {
-              ...allPhotos[level],
+              ...photoData,
               level: level
             };
           }
@@ -73,11 +73,11 @@ export default function GalleryPage() {
           {unlockedPhotos.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
               {unlockedPhotos.map((photo) => (
-                <Card key={photo.level} className="group relative overflow-hidden">
+                <Card key={photo.level} className="group relative overflow-hidden rounded-lg">
                   <CardHeader className="absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/60 to-transparent p-4">
                     <CardTitle className="text-white font-headline text-lg">Level {photo.level}</CardTitle>
                   </CardHeader>
-                  <CardContent className="p-0 aspect-w-1 aspect-h-1">
+                  <CardContent className="p-0 aspect-square">
                     <Image src={photo.imageUrl} alt={`Memory from level ${photo.level}`} layout="fill" objectFit="cover" />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
                        <Button
