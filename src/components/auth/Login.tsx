@@ -20,7 +20,7 @@ import { LogIn } from 'lucide-react';
 import { useMusic } from '@/hooks/useMusic';
 
 const ADMIN_USER = 'Admin';
-const PLAYER_USER = 'Player';
+const PLAYER_USER = 'Abby';
 
 export function Login() {
   const [username, setUsername] = useState('');
