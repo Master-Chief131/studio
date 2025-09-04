@@ -2,13 +2,13 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
 import { getFromStorage } from '@/lib/storage';
 import { SudokuBoard } from '@/components/game/SudokuBoard';
 import { Header } from '@/components/shared/Header';
-import type { Puzzle, Photos, PhotoData, Grid, Cell, HelpQuestion, GameState } from '@/types';
+import type { Puzzle, Photos, PhotoData, Cell, HelpQuestion, GameState } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, LifeBuoy, Heart } from 'lucide-react';
@@ -25,10 +25,12 @@ import {
 } from "@/components/ui/alert-dialog"
 
 
-export default function PlayPage({ params }: { params: { level: string } }) {
+export default function PlayPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
+  
   const [puzzleData, setPuzzleData] = useState<Puzzle | null>(null);
   const [currentGrid, setCurrentGrid] = useState<Grid | null>(null);
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
@@ -44,15 +46,9 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   const [showQuestionDialog, setShowQuestionDialog] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<HelpQuestion | null>(null);
 
-  const randomPuzzle = useMemo(() => {
-    const level = parseInt(params.level, 10);
-    if (isNaN(level)) {
-        return null;
-    }
-    const basePuzzle = getPuzzle(level);
-    return basePuzzle ? transformPuzzle(basePuzzle) : null;
-  }, [params]);
-
+  const levelStr = Array.isArray(params.level) ? params.level[0] : params.level;
+  const level = useMemo(() => parseInt(levelStr, 10), [levelStr]);
+  const pageTitle = useMemo(() => `Nivel ${level}`, [level]);
 
   useEffect(() => {
     if (authLoading) {
@@ -63,6 +59,14 @@ export default function PlayPage({ params }: { params: { level: string } }) {
       return;
     }
     
+    if (isNaN(level)) {
+        router.push('/dashboard');
+        return;
+    }
+    
+    const basePuzzle = getPuzzle(level);
+    const randomPuzzle = basePuzzle ? transformPuzzle(basePuzzle) : null;
+
     if (!randomPuzzle) {
         router.push('/dashboard');
         return;
@@ -81,7 +85,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
     
     setLoading(false);
 
-  }, [router, user, authLoading, randomPuzzle]);
+  }, [level, router, user, authLoading]);
 
   const triggerHelp = useCallback(() => {
     if (!currentGrid || !puzzleData) return;
@@ -96,7 +100,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
     }
 
     if (emptyCells.length === 0) {
-        toast({ title: "No more empty cells to fill!", variant: "destructive" });
+        toast({ title: "No quedan más celdas vacías para rellenar.", variant: "destructive" });
         return;
     }
 
@@ -110,8 +114,8 @@ export default function PlayPage({ params }: { params: { level: string } }) {
     setHelpCell({ row, col });
 
     toast({
-        title: "Help has arrived!",
-        description: `Cell at row ${row + 1}, col ${col + 1} has been filled.`,
+        title: "¡La ayuda ha llegado!",
+        description: `La celda en la fila ${row + 1}, columna ${col + 1} ha sido rellenada.`,
     });
   }, [currentGrid, puzzleData, toast]);
 
@@ -177,7 +181,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   }
 
 
-  if (authLoading || loading) {
+  if (authLoading || loading || isNaN(level)) {
     return (
         <div className="flex flex-col min-h-screen">
             <Header />
@@ -192,7 +196,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   }
 
   if (!puzzleData || !currentGrid) {
-    return <div className='text-center p-8'>Puzzle not found.</div>;
+    return <div className='text-center p-8'>Puzzle no encontrado.</div>;
   }
 
   return (
@@ -201,7 +205,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
         <Header />
         <main className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
           <h2 className="font-headline text-3xl md:text-4xl font-bold text-primary-foreground/90 my-4">
-            Level {params.level}
+            {pageTitle}
           </h2>
           <div className="flex w-full max-w-xl justify-between items-center mb-4 px-1">
               <Button variant="outline" onClick={() => router.push('/dashboard')}>
@@ -251,7 +255,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
             </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-            <AlertDialogAction onClick={() => router.push('/dashboard')}>Volver a Intentar</AlertDialogAction>
+            <AlertDialogAction onClick={() => router.push('/dashboard')}>Volver a Intentarlo</AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
