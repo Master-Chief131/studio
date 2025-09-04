@@ -8,27 +8,24 @@ import { useEffect, useState } from 'react';
 interface SudokuGridProps {
   initialGrid: Grid;
   currentGrid: Grid;
-  solution: Grid;
   onInputChange: (row: number, col: number, value: number | null) => void;
   helpCell: Cell | null;
-  onError: () => void;
   revealedBlocks: boolean[];
   selectedCell: Cell | null;
   setSelectedCell: (cell: Cell | null) => void;
+  errors: boolean[][];
 }
 
 export function SudokuGrid({ 
     initialGrid, 
     currentGrid, 
-    solution, 
     onInputChange, 
     helpCell, 
-    onError, 
     revealedBlocks,
     selectedCell,
-    setSelectedCell
+    setSelectedCell,
+    errors
 }: SudokuGridProps) {
-  const [errors, setErrors] = useState<boolean[][]>(Array(9).fill(null).map(() => Array(9).fill(false)));
   const [revealedCell, setRevealedCell] = useState<Cell | null>(null);
 
   useEffect(() => {
@@ -38,25 +35,6 @@ export function SudokuGrid({
           return () => clearTimeout(timer);
       }
   }, [helpCell]);
-
-  const handleCellChange = (row: number, col: number, value: string) => {
-    const num = parseInt(value, 10);
-    if (value === '' || (num >= 1 && num <= 9)) {
-      const newErrors = errors.map(r => [...r]);
-      const enteredValue = value === '' ? null : num;
-      onInputChange(row, col, enteredValue);
-      
-      if (enteredValue !== null && enteredValue !== solution[row][col]) {
-        if(!errors[row][col]){ // Solo activar error si no era ya un error
-            onError();
-            newErrors[row][col] = true;
-        }
-      } else {
-        newErrors[row][col] = false;
-      }
-      setErrors(newErrors);
-    }
-  };
 
   const handleCellClick = (row: number, col: number) => {
     const isGiven = initialGrid[row][col] !== null;
@@ -75,7 +53,6 @@ export function SudokuGrid({
         row.map((cell, colIndex) => {
           const isGiven = initialGrid[rowIndex][colIndex] !== null;
           const isError = errors[rowIndex][colIndex];
-          const isCorrect = !isError && cell !== null && cell === solution[rowIndex][colIndex] && !isGiven;
           const isRevealed = revealedCell && revealedCell.row === rowIndex && revealedCell.col === colIndex;
           const isSubgridRevealed = revealedBlocks[getSubgrid(rowIndex, colIndex)];
           const isSelected = selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex;
@@ -99,13 +76,18 @@ export function SudokuGrid({
                 pattern="[1-9]*"
                 maxLength={1}
                 value={cell || ''}
-                onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
-                readOnly={isGiven || typeof window !== 'undefined' && window.innerWidth < 768} // Prevent keyboard on mobile
+                onChange={(e) => {
+                    const value = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                    if (!isNaN(value!) || value === null) {
+                        onInputChange(rowIndex, colIndex, value);
+                    }
+                }}
+                readOnly
                 className={cn(
                   'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000 pointer-events-none',
                    isGiven ? 'text-primary-foreground/80' : 'text-accent-foreground',
                   isError && 'text-destructive',
-                  (isCorrect || isRevealed) && 'text-green-600',
+                  isRevealed && 'text-green-600',
                   isSubgridRevealed && 'text-white'
                 )}
                 style={isSubgridRevealed ? { textShadow: '0 0 3px black, 0 0 3px black' } : {}}

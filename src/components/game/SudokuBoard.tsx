@@ -35,6 +35,7 @@ export function SudokuBoard({
 }: SudokuBoardProps) {
   const [revealedBlocks, setRevealedBlocks] = useState<boolean[]>(Array(9).fill(false));
   const [isComplete, setIsComplete] = useState(false);
+  const [errors, setErrors] = useState<boolean[][]>(Array(9).fill(null).map(() => Array(9).fill(false)));
   const router = useRouter();
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
@@ -42,6 +43,18 @@ export function SudokuBoard({
       r.map((cell, colIndex) => (rowIndex === row && colIndex === col ? value : cell))
     );
     setCurrentGrid(newGrid);
+
+    // Validation logic moved here
+    const newErrors = errors.map(r => [...r]);
+    if (value !== null && value !== puzzleData.solution[row][col]) {
+      if (!errors[row][col]) {
+        onError();
+        newErrors[row][col] = true;
+      }
+    } else {
+      newErrors[row][col] = false;
+    }
+    setErrors(newErrors);
   };
 
   const handleNumberPadClick = (number: number) => {
@@ -96,13 +109,12 @@ export function SudokuBoard({
             <SudokuGrid 
             initialGrid={puzzleData.puzzle} 
             currentGrid={currentGrid}
-            solution={puzzleData.solution}
             onInputChange={handleInputChange}
             helpCell={helpCell}
-            onError={onError}
             revealedBlocks={revealedBlocks}
             selectedCell={selectedCell}
             setSelectedCell={setSelectedCell}
+            errors={errors}
             />
         )}
         {isComplete && photoData && (
