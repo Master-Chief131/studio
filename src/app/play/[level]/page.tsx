@@ -8,12 +8,22 @@ import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
 import { getFromStorage } from '@/lib/storage';
 import { SudokuBoard } from '@/components/game/SudokuBoard';
 import { Header } from '@/components/shared/Header';
-import type { Puzzle, Photos, PhotoData, Grid, Cell, HelpQuestion } from '@/types';
+import type { Puzzle, Photos, PhotoData, Grid, Cell, HelpQuestion, GameState } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, LifeBuoy } from 'lucide-react';
+import { ArrowLeft, LifeBuoy, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { HelpQuestionDialog } from '@/components/game/HelpQuestionDialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
 
 export default function PlayPage({ params }: { params: { level: string } }) {
   const { user, loading: authLoading } = useAuth();
@@ -24,6 +34,9 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [helpCell, setHelpCell] = useState<Cell | null>(null);
+
+  // Game State
+  const [gameState, setGameState] = useState<GameState>({ lives: 3, isGameOver: false });
 
   // Help Questions State
   const [questions, setQuestions] = useState<HelpQuestion[]>([]);
@@ -106,10 +119,10 @@ export default function PlayPage({ params }: { params: { level: string } }) {
     const availableQuestions = questions.filter(q => !askedQuestionIds.includes(q.id));
     if (availableQuestions.length === 0) {
       toast({
-        title: "No more questions!",
-        description: "You've answered them all. Here's a free hint.",
+        title: "¡Te quedaste sin ayudas!",
+        description: "Has usado todas las preguntas disponibles.",
+        variant: "destructive",
       });
-      triggerHelp();
       return;
     }
 
@@ -132,11 +145,23 @@ export default function PlayPage({ params }: { params: { level: string } }) {
       });
       triggerHelp();
     } else {
-      toast({
-        title: "Respuesta incorrecta",
-        description: "Inténtalo de nuevo en la próxima oportunidad.",
-        variant: "destructive",
-      });
+        const newLives = gameState.lives - 1;
+        setGameState({ ...gameState, lives: newLives });
+        
+        if (newLives > 0) {
+            toast({
+                title: "Respuesta incorrecta",
+                description: `Te quedan ${newLives} ${newLives === 1 ? 'vida' : 'vidas'}.`,
+                variant: "destructive",
+            });
+        } else {
+            toast({
+                title: "¡Oh no!",
+                description: "Te quedaste sin vidas.",
+                variant: "destructive",
+            });
+            setGameState({ ...gameState, isGameOver: true, lives: 0 });
+        }
     }
     setCurrentQuestion(null);
   }
@@ -172,7 +197,15 @@ export default function PlayPage({ params }: { params: { level: string } }) {
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Regresar
               </Button>
-              <Button variant="secondary" onClick={handleHelpClick}>
+              <div className="flex items-center gap-2">
+                {Array.from({length: gameState.lives}).map((_, i) => (
+                    <Heart key={`life-${i}`} className="h-6 w-6 text-red-500 fill-current" />
+                ))}
+                {Array.from({length: 3 - gameState.lives}).map((_, i) => (
+                    <Heart key={`lost-${i}`} className="h-6 w-6 text-muted-foreground/50" />
+                ))}
+              </div>
+              <Button variant="secondary" onClick={handleHelpClick} disabled={gameState.isGameOver}>
                   <LifeBuoy className="mr-2 h-4 w-4" />
                   Ayuda
               </Button>
@@ -184,9 +217,11 @@ export default function PlayPage({ params }: { params: { level: string } }) {
             setCurrentGrid={setCurrentGrid}
             photoData={photoData}
             helpCell={helpCell}
+            gameState={gameState}
           />
         </main>
       </div>
+
       {currentQuestion && (
         <HelpQuestionDialog
           isOpen={showQuestionDialog}
@@ -195,6 +230,19 @@ export default function PlayPage({ params }: { params: { level: string } }) {
           onAnswer={handleQuestionAnswered}
         />
       )}
+      <AlertDialog open={gameState.isGameOver}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+            <AlertDialogTitle className='font-headline text-2xl'>Fin del Juego</AlertDialogTitle>
+            <AlertDialogDescription>
+                Te has quedado sin vidas. ¡Pero no te preocupes, el amor siempre da otra oportunidad!
+            </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+            <AlertDialogAction onClick={() => router.push('/dashboard')}>Volver a Intentar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

@@ -1,4 +1,5 @@
 
+
 export type User = {
   username: string;
   role: 'admin' | 'player';
@@ -31,4 +32,9 @@ export type HelpQuestion = {
     question: string;
     options: string[];
     correctAnswerIndex: number;
+}
+
+export type GameState = {
+    lives: number;
+    isGameOver: boolean;
 }

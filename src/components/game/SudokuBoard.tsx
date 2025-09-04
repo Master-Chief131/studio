@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Puzzle, Grid, PhotoData, Cell } from '@/types';
+import type { Puzzle, Grid, PhotoData, Cell, GameState } from '@/types';
 import { PhotoReveal } from './PhotoReveal';
 import { SudokuGrid } from './SudokuGrid';
 import { useRouter } from 'next/navigation';
@@ -15,9 +15,10 @@ interface SudokuBoardProps {
   setCurrentGrid: (grid: Grid) => void;
   photoData: PhotoData | null;
   helpCell: Cell | null;
+  gameState: GameState;
 }
 
-export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid, helpCell }: SudokuBoardProps) {
+export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid, helpCell, gameState }: SudokuBoardProps) {
   const [revealedBlocks, setRevealedBlocks] = useState<boolean[]>(Array(9).fill(false));
   const [isComplete, setIsComplete] = useState(false);
   const router = useRouter();
@@ -36,7 +37,7 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
   };
 
   useEffect(() => {
-    if (isComplete) return;
+    if (isComplete || gameState.isGameOver) return;
 
     const newRevealedBlocks = revealedBlocks.map((_, index) => checkSubgrid(index));
     setRevealedBlocks(newRevealedBlocks);
@@ -52,7 +53,7 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
         }, 1200);
     }
 
-  }, [currentGrid, puzzleData.solution, isComplete, puzzleData.level, revealedBlocks]);
+  }, [currentGrid, puzzleData.solution, isComplete, puzzleData.level, revealedBlocks, gameState.isGameOver]);
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
     const newGrid = currentGrid.map((r, rowIndex) =>
@@ -64,7 +65,7 @@ export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid
   return (
     <div className="relative w-full max-w-xl aspect-square">
       <PhotoReveal imageUrl={photoData?.imageUrl || null} revealedBlocks={revealedBlocks} isComplete={isComplete}/>
-      {!isComplete && (
+      {!isComplete && !gameState.isGameOver && (
         <SudokuGrid 
           initialGrid={puzzleData.puzzle} 
           currentGrid={currentGrid}
