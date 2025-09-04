@@ -38,7 +38,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
     }
     const basePuzzle = getPuzzle(level);
     return basePuzzle ? transformPuzzle(basePuzzle) : null;
-  }, [params.level]);
+  }, [params]);
 
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
     
     setLoading(false);
 
-  }, [params.level, router, user, authLoading, randomPuzzle]);
+  }, [router, user, authLoading, randomPuzzle]);
 
   const triggerHelp = useCallback(() => {
     if (!currentGrid || !puzzleData) return;
