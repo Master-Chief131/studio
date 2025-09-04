@@ -4,28 +4,12 @@ import { useState, useEffect } from 'react';
 import type { Puzzle, Grid } from '@/types';
 import { PhotoReveal } from './PhotoReveal';
 import { SudokuGrid } from './SudokuGrid';
-import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { CompletionOverlay } from './CompletionOverlay';
 
 interface SudokuBoardProps {
   puzzleData: Puzzle;
   imageUrl: string | null;
-}
-
-function CompletionOverlay({ onBack }: { onBack: () => void }) {
-    return (
-        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center p-4 z-20">
-            <h2 className="font-headline text-4xl font-bold text-white">¡Felicitaciones!</h2>
-            <p className="mt-2 text-lg text-white/90">
-                Resolviste el puzzle y revelaste la foto. ¡Eres increíble!
-            </p>
-            <Button onClick={onBack} className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver a los niveles
-            </Button>
-        </div>
-    );
 }
 
 export function SudokuBoard({ puzzleData, imageUrl }: SudokuBoardProps) {
@@ -76,7 +60,12 @@ export function SudokuBoard({ puzzleData, imageUrl }: SudokuBoardProps) {
           onInputChange={handleInputChange} 
         />
       )}
-      {isComplete && <CompletionOverlay onBack={() => router.push('/dashboard')} />}
+      {isComplete && imageUrl && (
+        <CompletionOverlay
+          imageUrl={imageUrl}
+          onBack={() => router.push('/dashboard')}
+        />
+      )}
     </div>
   );
 }
