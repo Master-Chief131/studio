@@ -42,29 +42,33 @@ export function Login() {
       user = { username: PLAYER_USER, role: 'player' };
     }
 
-    setTimeout(() => {
-        if (user) {
-          saveToStorage('sudoku-user', user);
+    if (user) {
+      saveToStorage('sudoku-user', user);
+      if (user.role === 'player') {
+        const music = getFromStorage<string>('sudoku-background-music');
+        if(music) {
+            playMusic(music);
+        }
+      }
+      // Delay navigation to allow music to start
+      setTimeout(() => {
           toast({
             title: `¡Bienvenid@, ${user.username}!`,
             description: 'Has iniciado sesión correctamente.',
           });
-          if (user.role === 'player') {
-            const music = getFromStorage<string>('sudoku-background-music');
-            if(music) {
-                playMusic(music);
-            }
-          }
           router.push('/dashboard');
-        } else {
-          toast({
+      }, 100);
+
+    } else {
+       setTimeout(() => {
+        toast({
             variant: 'destructive',
             title: 'Inicio de Sesión Fallido',
             description: 'Nombre de usuario inválido. Por favor, inténtalo de nuevo.',
-          });
-          setLoading(false);
-        }
-    }, 500);
+        });
+        setLoading(false);
+       }, 500);
+    }
   };
 
   return (
