@@ -8,10 +8,8 @@ import { puzzles } from '@/lib/sudoku';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlayCircle, ImageUp, Heart, GalleryVerticalEnd } from 'lucide-react';
+import { PlayCircle, GalleryVerticalEnd, Heart } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useEffect, useState } from 'react';
-import { getFromStorage } from '@/lib/storage';
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -59,11 +57,6 @@ function AdminDashboard() {
 }
 
 function PlayerDashboard() {
-  const [music, setMusic] = useState<string | null>(null);
-
-  useEffect(() => {
-    setMusic(getFromStorage('sudoku-background-music'));
-  }, []);
 
   return (
     <div className="space-y-8">
@@ -78,9 +71,6 @@ function PlayerDashboard() {
                 View Your Gallery
             </Button>
         </Link>
-        {music && (
-            <audio src={music} controls autoPlay loop className="h-8" />
-        )}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
         {puzzles.map((level) => (
