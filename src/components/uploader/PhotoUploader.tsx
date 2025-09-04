@@ -223,7 +223,7 @@ export function PhotoUploader() {
                 <CardContent className="flex items-center justify-center aspect-square bg-muted rounded-b-lg">
                   {photos[p.level]?.imageUrl ? (
                     <>
-                      <Image src={photos[p.level].imageUrl} alt={`Level ${p.level} photo`} layout="fill" objectFit="cover" className="rounded-b-lg" />
+                      <Image src={photos[p.level].imageUrl} alt={`Level ${p.level} photo`} width={300} height={300} className="object-cover w-full h-full rounded-b-lg" />
                       <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                         <Button
                             variant="secondary"
