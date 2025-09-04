@@ -11,6 +11,11 @@ export type Puzzle = {
   solution: Grid;
 };
 
+export type PhotoData = {
+  imageUrl: string;
+  message: string;
+};
+
 export type Photos = {
-  [level: string]: string;
+  [level: string]: PhotoData;
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Puzzle, Grid } from '@/types';
+import type { Puzzle, Grid, PhotoData } from '@/types';
 import { PhotoReveal } from './PhotoReveal';
 import { SudokuGrid } from './SudokuGrid';
 import { useRouter } from 'next/navigation';
@@ -9,10 +9,10 @@ import { CompletionOverlay } from './CompletionOverlay';
 
 interface SudokuBoardProps {
   puzzleData: Puzzle;
-  imageUrl: string | null;
+  photoData: PhotoData | null;
 }
 
-export function SudokuBoard({ puzzleData, imageUrl }: SudokuBoardProps) {
+export function SudokuBoard({ puzzleData, photoData }: SudokuBoardProps) {
   const [grid, setGrid] = useState<Grid>(puzzleData.puzzle);
   const [revealedBlocks, setRevealedBlocks] = useState<boolean[]>(Array(9).fill(false));
   const [isComplete, setIsComplete] = useState(false);
@@ -32,15 +32,18 @@ export function SudokuBoard({ puzzleData, imageUrl }: SudokuBoardProps) {
   };
 
   useEffect(() => {
+    if (isComplete) return;
+
     const newRevealedBlocks = revealedBlocks.map((_, index) => checkSubgrid(index));
     setRevealedBlocks(newRevealedBlocks);
 
     const allCorrect = newRevealedBlocks.every(Boolean);
     if(allCorrect) {
-        setIsComplete(true);
+        // A small delay to allow the last block to reveal before showing the completion overlay
+        setTimeout(() => setIsComplete(true), 1200);
     }
 
-  }, [grid, revealedBlocks, puzzleData.solution]);
+  }, [grid, puzzleData.solution, isComplete]); // removed revealedBlocks dependency
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
     const newGrid = grid.map((r, rowIndex) =>
@@ -51,7 +54,7 @@ export function SudokuBoard({ puzzleData, imageUrl }: SudokuBoardProps) {
   
   return (
     <div className="relative w-full max-w-xl aspect-square">
-      <PhotoReveal imageUrl={imageUrl} revealedBlocks={revealedBlocks} isComplete={isComplete}/>
+      <PhotoReveal imageUrl={photoData?.imageUrl || null} revealedBlocks={revealedBlocks} isComplete={isComplete}/>
       {!isComplete && (
         <SudokuGrid 
           initialGrid={puzzleData.puzzle} 
@@ -60,9 +63,10 @@ export function SudokuBoard({ puzzleData, imageUrl }: SudokuBoardProps) {
           onInputChange={handleInputChange} 
         />
       )}
-      {isComplete && imageUrl && (
+      {isComplete && photoData && (
         <CompletionOverlay
-          imageUrl={imageUrl}
+          imageUrl={photoData.imageUrl}
+          message={photoData.message}
           onBack={() => router.push('/dashboard')}
         />
       )}

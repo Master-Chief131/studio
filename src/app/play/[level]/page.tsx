@@ -7,14 +7,14 @@ import { getPuzzle } from '@/lib/sudoku';
 import { getFromStorage } from '@/lib/storage';
 import { SudokuBoard } from '@/components/game/SudokuBoard';
 import { Header } from '@/components/shared/Header';
-import type { Puzzle, Photos } from '@/types';
+import type { Puzzle, Photos, PhotoData } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PlayPage({ params }: { params: { level: string } }) {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [puzzleData, setPuzzleData] = useState<Puzzle | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
         if (puzzle) {
           setPuzzleData(puzzle);
           if (photos && photos[level]) {
-            setImageUrl(photos[level]);
+            setPhotoData(photos[level]);
           }
         } else {
             router.push('/dashboard');
@@ -65,7 +65,7 @@ export default function PlayPage({ params }: { params: { level: string } }) {
         <h2 className="font-headline text-3xl md:text-4xl font-bold text-primary-foreground/90 my-4">
           Level {params.level}
         </h2>
-        <SudokuBoard puzzleData={puzzleData} imageUrl={imageUrl} />
+        <SudokuBoard puzzleData={puzzleData} photoData={photoData} />
       </main>
     </div>
   );
