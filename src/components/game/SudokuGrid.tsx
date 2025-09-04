@@ -84,8 +84,9 @@ export function SudokuGrid({ initialGrid, currentGrid, solution, onInputChange, 
                   isGiven ? 'text-primary-foreground/80' : 'text-accent-foreground',
                   isError && 'text-destructive',
                   (isCorrect || isRevealed) && 'text-green-600',
-                  isSubgridRevealed && 'text-transparent'
+                  isSubgridRevealed && 'text-white'
                 )}
+                style={isSubgridRevealed ? { textShadow: '0 0 3px black, 0 0 3px black' } : {}}
                 aria-label={`Celda F${rowIndex + 1}C${colIndex + 1}`}
               />
             </div>
