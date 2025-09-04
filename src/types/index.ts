@@ -1,6 +1,12 @@
+
 export type User = {
   username: string;
   role: 'admin' | 'player';
+};
+
+export type Cell = {
+  row: number;
+  col: number;
 };
 
 export type Grid = (number | null)[][];

@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { Puzzle, Grid, PhotoData } from '@/types';
+import type { Puzzle, Grid, PhotoData, Cell } from '@/types';
 import { PhotoReveal } from './PhotoReveal';
 import { SudokuGrid } from './SudokuGrid';
 import { useRouter } from 'next/navigation';
@@ -10,11 +11,13 @@ import { getFromStorage, saveToStorage } from '@/lib/storage';
 
 interface SudokuBoardProps {
   puzzleData: Puzzle;
+  currentGrid: Grid;
+  setCurrentGrid: (grid: Grid) => void;
   photoData: PhotoData | null;
+  helpCell: Cell | null;
 }
 
-export function SudokuBoard({ puzzleData, photoData }: SudokuBoardProps) {
-  const [grid, setGrid] = useState<Grid>(puzzleData.puzzle);
+export function SudokuBoard({ puzzleData, photoData, currentGrid, setCurrentGrid, helpCell }: SudokuBoardProps) {
   const [revealedBlocks, setRevealedBlocks] = useState<boolean[]>(Array(9).fill(false));
   const [isComplete, setIsComplete] = useState(false);
   const router = useRouter();
@@ -24,7 +27,7 @@ export function SudokuBoard({ puzzleData, photoData }: SudokuBoardProps) {
     const startCol = (subgridIndex % 3) * 3;
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
-        if (grid[startRow + i][startCol + j] !== puzzleData.solution[startRow + i][startCol + j]) {
+        if (currentGrid[startRow + i][startCol + j] !== puzzleData.solution[startRow + i][startCol + j]) {
           return false;
         }
       }
@@ -40,7 +43,6 @@ export function SudokuBoard({ puzzleData, photoData }: SudokuBoardProps) {
 
     const allCorrect = newRevealedBlocks.every(Boolean);
     if(allCorrect) {
-        // A small delay to allow the last block to reveal before showing the completion overlay
         setTimeout(() => {
             const completedLevels = getFromStorage<number[]>('sudoku-completed-levels') || [];
             if (!completedLevels.includes(puzzleData.level)) {
@@ -50,13 +52,13 @@ export function SudokuBoard({ puzzleData, photoData }: SudokuBoardProps) {
         }, 1200);
     }
 
-  }, [grid, puzzleData.solution, isComplete, puzzleData.level, revealedBlocks]);
+  }, [currentGrid, puzzleData.solution, isComplete, puzzleData.level, revealedBlocks]);
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
-    const newGrid = grid.map((r, rowIndex) =>
+    const newGrid = currentGrid.map((r, rowIndex) =>
       r.map((cell, colIndex) => (rowIndex === row && colIndex === col ? value : cell))
     );
-    setGrid(newGrid);
+    setCurrentGrid(newGrid);
   };
   
   return (
@@ -65,9 +67,10 @@ export function SudokuBoard({ puzzleData, photoData }: SudokuBoardProps) {
       {!isComplete && (
         <SudokuGrid 
           initialGrid={puzzleData.puzzle} 
-          currentGrid={grid}
+          currentGrid={currentGrid}
           solution={puzzleData.solution}
-          onInputChange={handleInputChange} 
+          onInputChange={handleInputChange}
+          helpCell={helpCell}
         />
       )}
       {isComplete && photoData && (
