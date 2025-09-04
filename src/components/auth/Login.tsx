@@ -76,7 +76,8 @@ export function Login() {
       <CardHeader>
         <CardTitle className="font-headline text-2xl">Ingresa tu Nombre</CardTitle>
         <CardDescription>
-          Usa '{PLAYER_USER}' para jugar o '{ADMIN_USER}' para configurar el juego.
+          {/* Usa '{PLAYER_USER}' para jugar o '{ADMIN_USER}' para configurar el juego. */}
+          Con mucho amor para Abigahyl!
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleLogin}>
@@ -86,7 +87,7 @@ export function Login() {
             <Input
               id="username"
               type="text"
-              placeholder="Ej., Player"
+              placeholder="Ej., Abby"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -98,7 +99,7 @@ export function Login() {
         <CardFooter>
           <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={loading}>
             <LogIn className="mr-2 h-4 w-4" />
-            {loading ? 'Iniciando sesión...' : 'Entrar a SudokuLove'}
+            {loading ? 'Iniciando sesión...' : 'Empezar a jugar'}
           </Button>
         </CardFooter>
       </form>

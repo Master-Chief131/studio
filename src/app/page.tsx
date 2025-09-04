@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 const easterEggMessages = [
-    "Curiosa, ¿eh? 😏",
+    "Curiosa, ¿eh?",
     "El juego aún no ha empezado y ya estás explorando",
     "Esa curiosidad tuya me encanta ❤️"
 ];
@@ -101,7 +101,7 @@ export default function LoginPage() {
           SudokuLove
         </h1>
         <p className="mt-4 text-lg text-muted-foreground max-w-md mx-auto">
-          Un Sudoku especial para mi persona especial, con mucho amor para Abigahyl
+          Un Sudoku especial para mi persona especial
         </p>
       </div>
       <Login />
