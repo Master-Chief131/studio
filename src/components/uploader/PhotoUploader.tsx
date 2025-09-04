@@ -13,10 +13,12 @@ import { puzzles } from '@/lib/sudoku';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Trash2, Eye, Music, X, PlusCircle, Save } from 'lucide-react';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle as VisuallyHiddenTitle } from '@/components/ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+
 
 const defaultMessages: {[key: string]: string} = {
     '1': '¿Recuerdas cuando...?',
@@ -398,7 +400,11 @@ export function PhotoUploader() {
       </Card>
       {previewing && (
         <Dialog open={!!previewing} onOpenChange={(isOpen) => !isOpen && setPreviewing(null)}>
-            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent">
+            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-describedby={undefined}>
+                <VisuallyHidden>
+                  <VisuallyHiddenTitle>Vista Previa del Recuerdo</VisuallyHiddenTitle>
+                  <DialogDescription>{previewing.message}</DialogDescription>
+                </VisuallyHidden>
                 <div className="relative aspect-square w-full">
                     <CompletionOverlay
                         imageUrl={previewing.imageUrl}

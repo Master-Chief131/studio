@@ -8,10 +8,12 @@ import { Header } from '@/components/shared/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle as VisuallyHiddenTitle } from '@/components/ui/dialog';
 import Image from 'next/image';
 import type { PhotoData, Photos } from '@/types';
 import { ArrowLeft, Maximize } from 'lucide-react';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+
 
 type UnlockedPhoto = PhotoData & {
   level: number;
@@ -104,7 +106,11 @@ export default function GalleryPage() {
 
       {selectedPhoto && (
          <Dialog open={!!selectedPhoto} onOpenChange={(isOpen) => !isOpen && setSelectedPhoto(null)}>
-            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent">
+            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-describedby={undefined}>
+                <VisuallyHidden>
+                  <VisuallyHiddenTitle>Recuerdo Desbloqueado</VisuallyHiddenTitle>
+                  <DialogDescription>{selectedPhoto.message}</DialogDescription>
+                </VisuallyHidden>
                 <div className="relative aspect-square w-full">
                     <CompletionOverlay
                         imageUrl={selectedPhoto.imageUrl}
