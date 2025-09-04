@@ -15,7 +15,7 @@ interface SudokuBoardProps {
 
 function CompletionOverlay({ onBack }: { onBack: () => void }) {
     return (
-        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4 z-20">
+        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-center p-4 z-20">
             <h2 className="font-headline text-4xl font-bold text-white">¡Felicitaciones!</h2>
             <p className="mt-2 text-lg text-white/90">
                 Resolviste el puzzle y revelaste la foto. ¡Eres increíble!
@@ -56,7 +56,7 @@ export function SudokuBoard({ puzzleData, imageUrl }: SudokuBoardProps) {
         setIsComplete(true);
     }
 
-  }, [grid]);
+  }, [grid, revealedBlocks, puzzleData.solution]);
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
     const newGrid = grid.map((r, rowIndex) =>
