@@ -58,8 +58,8 @@ export function SudokuGrid({
     }
   };
 
-  const handleFocus = (row: number, col: number) => {
-    const isGiven = initialGrid[rowIndex][colIndex] !== null;
+  const handleCellClick = (row: number, col: number) => {
+    const isGiven = initialGrid[row][col] !== null;
     if (!isGiven) {
         setSelectedCell({ row, col });
     }
@@ -83,13 +83,14 @@ export function SudokuGrid({
           return (
             <div
               key={`${rowIndex}-${colIndex}`}
+              onClick={() => handleCellClick(rowIndex, colIndex)}
               className={cn(
-                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-1000",
+                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-1000 cursor-pointer",
                 (colIndex + 1) % 3 === 0 && colIndex < 8 && "border-r-2 border-r-primary/50",
                 (rowIndex + 1) % 3 === 0 && rowIndex < 8 && "border-b-2 border-b-primary/50",
                 isRevealed && "bg-accent/50",
                 isSubgridRevealed && "bg-transparent border-transparent",
-                isSelected && !isGiven && "bg-accent/30"
+                isSelected && !isGiven && "bg-accent/30 ring-2 ring-accent z-10"
               )}
             >
               <input
@@ -99,12 +100,10 @@ export function SudokuGrid({
                 maxLength={1}
                 value={cell || ''}
                 onChange={(e) => handleCellChange(rowIndex, colIndex, e.target.value)}
-                onFocus={() => handleFocus(rowIndex, colIndex)}
-                readOnly={isGiven}
+                readOnly={isGiven || typeof window !== 'undefined' && window.innerWidth < 768} // Prevent keyboard on mobile
                 className={cn(
-                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000',
+                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000 pointer-events-none',
                    isGiven ? 'text-primary-foreground/80' : 'text-accent-foreground',
-                  isSelected && !isGiven ? 'ring-2 ring-accent z-10' : '',
                   isError && 'text-destructive',
                   (isCorrect || isRevealed) && 'text-green-600',
                   isSubgridRevealed && 'text-white'
