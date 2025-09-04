@@ -1,4 +1,4 @@
-import type { Puzzle } from "@/types";
+import type { Puzzle, Grid } from "@/types";
 
 // Puzzles from https://sandiway.arizona.edu/sudoku/examples.html
 export const puzzles: Puzzle[] = [
@@ -131,4 +131,72 @@ export const puzzles: Puzzle[] = [
 
 export const getPuzzle = (level: number): Puzzle | undefined => {
   return puzzles.find((p) => p.level === level);
+};
+
+// --- Sudoku Transformation Logic ---
+
+function shuffleArray<T>(array: T[]): T[] {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+}
+
+function transformGrid(grid: Grid, numberMap: number[], rowSwaps: number[], colSwaps: number[]): Grid {
+    let newGrid = grid.map(row => [...row]);
+
+    // Apply number remap
+    newGrid = newGrid.map(row => row.map(cell => cell === null ? null : numberMap[cell - 1]));
+
+    // Apply row and column swaps
+    let swappedGrid = newGrid.map(row => [...row]);
+    for (let i = 0; i < 9; i++) {
+        for (let j = 0; j < 9; j++) {
+            swappedGrid[i][j] = newGrid[rowSwaps[i]][colSwaps[j]];
+        }
+    }
+    
+    return swappedGrid;
+}
+
+export const transformPuzzle = (puzzle: Puzzle): Puzzle => {
+    // 1. Create a random mapping for numbers 1-9
+    const numberMap = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+    // 2. Create random permutations for rows and columns within their 3x3 blocks
+    const rowGroup1 = shuffleArray([0, 1, 2]);
+    const rowGroup2 = shuffleArray([3, 4, 5]);
+    const rowGroup3 = shuffleArray([6, 7, 8]);
+    const finalRowSwaps = [...rowGroup1, ...rowGroup2, ...rowGroup3];
+
+    const colGroup1 = shuffleArray([0, 1, 2]);
+    const colGroup2 = shuffleArray([3, 4, 5]);
+    const colGroup3 = shuffleArray([6, 7, 8]);
+    const finalColSwaps = [...colGroup1, ...colGroup2, ...colGroup3];
+
+    // 3. Create random permutations for the 3x3 row and column blocks themselves
+    const rowBlockSwaps = shuffleArray([0, 1, 2]);
+    const finalRowSwapsWithBlock = rowBlockSwaps.flatMap(block => {
+        if (block === 0) return finalRowSwaps.slice(0, 3);
+        if (block === 1) return finalRowSwaps.slice(3, 6);
+        return finalRowSwaps.slice(6, 9);
+    });
+    
+    const colBlockSwaps = shuffleArray([0, 1, 2]);
+    const finalColSwapsWithBlock = colBlockSwaps.flatMap(block => {
+        if (block === 0) return finalColSwaps.slice(0, 3);
+        if (block === 1) return finalColSwaps.slice(3, 6);
+        return finalColSwaps.slice(6, 9);
+    });
+
+    const newPuzzleGrid = transformGrid(puzzle.puzzle, numberMap, finalRowSwapsWithBlock, finalColSwapsWithBlock);
+    const newSolutionGrid = transformGrid(puzzle.solution, numberMap, finalRowSwapsWithBlock, finalColSwapsWithBlock);
+
+    return {
+        ...puzzle,
+        puzzle: newPuzzleGrid,
+        solution: newSolutionGrid
+    };
 };

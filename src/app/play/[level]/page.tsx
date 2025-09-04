@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { getPuzzle } from '@/lib/sudoku';
+import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
 import { getFromStorage } from '@/lib/storage';
 import { SudokuBoard } from '@/components/game/SudokuBoard';
 import { Header } from '@/components/shared/Header';
@@ -17,6 +17,17 @@ export default function PlayPage({ params }: { params: { level: string } }) {
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // useMemo will ensure the puzzle is generated only once per page load
+  const randomPuzzle = useMemo(() => {
+    const level = parseInt(params.level, 10);
+    if (isNaN(level)) {
+        return null;
+    }
+    const basePuzzle = getPuzzle(level);
+    return basePuzzle ? transformPuzzle(basePuzzle) : null;
+  }, [params.level]);
+
+
   useEffect(() => {
     if (authLoading) {
       return;
@@ -26,28 +37,23 @@ export default function PlayPage({ params }: { params: { level: string } }) {
       return;
     }
     
-    const levelStr = params.level;
-    const level = parseInt(levelStr, 10);
-    
-    if (isNaN(level)) {
+    const level = parseInt(params.level, 10);
+
+    if (!randomPuzzle) {
         router.push('/dashboard');
         return;
     }
 
-    const puzzle = getPuzzle(level);
     const photos = getFromStorage<Photos>('sudoku-photos');
     
-    if (puzzle) {
-      setPuzzleData(puzzle);
-      if (photos && photos[level]) {
+    setPuzzleData(randomPuzzle);
+    if (photos && photos[level]) {
         setPhotoData(photos[level]);
-      }
-    } else {
-        router.push('/dashboard');
     }
+    
     setLoading(false);
 
-  }, [params, router, user, authLoading]);
+  }, [params.level, router, user, authLoading, randomPuzzle]);
 
   if (authLoading || loading) {
     return (
