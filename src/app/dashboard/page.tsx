@@ -56,6 +56,12 @@ function AdminDashboard() {
   );
 }
 
+const levelDescriptions = [
+    "Este juego fue creado especialmente para ti.",
+    "Cada nivel completado revelará una sorpresa especial.",
+    "¿Lista para descubrir qué he preparado para ti?"
+];
+
 function PlayerDashboard() {
 
   return (
@@ -73,7 +79,7 @@ function PlayerDashboard() {
         </Link>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
-        {puzzles.map((level) => (
+        {puzzles.map((level, index) => (
           <Card key={level.level} className="hover:shadow-lg hover:-translate-y-1 transition-transform duration-200">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -83,7 +89,7 @@ function PlayerDashboard() {
                     {Array.from({length: 5 - level.level}).map((_,i) => <Heart key={i} className="h-4 w-4 text-primary/30" />)}
                 </div>
               </CardTitle>
-              <CardDescription>Un nuevo desafío te espera.</CardDescription>
+              <CardDescription>{levelDescriptions[index % levelDescriptions.length]}</CardDescription>
             </CardHeader>
             <CardContent>
               <Link href={`/play/${level.level}`} passHref>
