@@ -15,8 +15,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import type { User } from '@/types';
-import { saveToStorage } from '@/lib/storage';
+import { getFromStorage, saveToStorage } from '@/lib/storage';
 import { LogIn } from 'lucide-react';
+import { useMusic } from '@/hooks/useMusic';
 
 const ADMIN_USER = 'Admin';
 const PLAYER_USER = 'Player';
@@ -26,6 +27,7 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { playMusic } = useMusic();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +49,12 @@ export function Login() {
             title: `Welcome, ${user.username}!`,
             description: 'You have successfully logged in.',
           });
+          if (user.role === 'player') {
+            const music = getFromStorage<string>('sudoku-background-music');
+            if(music) {
+                playMusic(music);
+            }
+          }
           router.push('/dashboard');
         } else {
           toast({

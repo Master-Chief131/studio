@@ -1,23 +1,17 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { getFromStorage } from '@/lib/storage';
-import { Heart, LogOut } from 'lucide-react';
+import { Heart, LogOut, Music, Volume2, VolumeX } from 'lucide-react';
+import { useMusic } from '@/hooks/useMusic';
 
 export function Header() {
   const { user, logout } = useAuth();
-  const [music, setMusic] = useState<string | null>(null);
+  const { musicUrl, isPlaying, toggleMute, isMuted } = useMusic();
   
-  useEffect(() => {
-    if (user?.role === 'player') {
-        const storedMusic = getFromStorage('sudoku-background-music');
-        if (storedMusic) {
-            setMusic(storedMusic);
-        }
-    }
-  }, [user]);
+  const handleLogout = () => {
+    logout();
+  }
 
   return (
     <header className="w-full bg-card shadow-sm">
@@ -34,10 +28,15 @@ export function Header() {
               Welcome, <span className="font-semibold">{user.username}</span>
             </span>
           )}
-          {music && user?.role === 'player' && (
-            <audio src={music} controls autoPlay loop className="h-8 hidden sm:block" />
+          {musicUrl && user?.role === 'player' && isPlaying && (
+            <div className="flex items-center gap-2">
+                <Music className="h-5 w-5 text-muted-foreground" />
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleMute}>
+                    {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                </Button>
+            </div>
           )}
-          <Button variant="ghost" size="sm" onClick={logout}>
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
