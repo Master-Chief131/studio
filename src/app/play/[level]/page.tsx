@@ -1,6 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+  // Música de fondo
+  const [musicFiles, setMusicFiles] = useState<string[]>([]);
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
@@ -10,7 +14,8 @@ import { Header } from '@/components/shared/Header';
 import type { Puzzle, Photos, PhotoData, Cell, HelpQuestion, GameState, Grid } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, LifeBuoy, Heart } from 'lucide-react';
+import { ArrowLeft, LifeBuoy, Heart, Volume2, VolumeX } from 'lucide-react';
+  const [isMuted, setIsMuted] = useState(false);
 import { useToast } from '@/hooks/use-toast';
 import { HelpQuestionDialog } from '@/components/game/HelpQuestionDialog';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
@@ -57,6 +62,35 @@ export default function PlayPage() {
   useEffect(() => {
     if (authLoading) {
       return;
+    // Obtener archivos de música
+    fetch('/api/admin/music')
+      .then(res => res.json())
+      .then(data => {
+        if (data && Array.isArray(data.files)) setMusicFiles(data.files);
+      });
+  // Cambiar de pista al terminar
+  useEffect(() => {
+    if (!musicFiles.length) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+    const handleEnded = () => {
+      setCurrentTrack((prev) => (prev + 1) % musicFiles.length);
+    };
+    audio.addEventListener('ended', handleEnded);
+    return () => {
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [musicFiles]);
+
+  // Cambiar src cuando cambia la pista
+  useEffect(() => {
+    if (!musicFiles.length) return;
+    const audio = audioRef.current;
+    if (audio) {
+      audio.src = `/music/${musicFiles[currentTrack]}`;
+      audio.play().catch(() => {});
+    }
+  }, [currentTrack, musicFiles]);
     }
     if (!user) {
       router.push('/');
@@ -218,28 +252,53 @@ export default function PlayPage() {
   return (
     <>
       <div className="flex min-h-screen flex-col bg-background">
+        {/* Reproductor de música oculto */}
+        {musicFiles.length > 0 && (
+          <audio
+            ref={audioRef}
+            src={`/music/${musicFiles[currentTrack]}`}
+            autoPlay
+            loop={false}
+            muted={isMuted}
+            style={{ display: 'none' }}
+          />
+        )}
         <Header />
         <main className="flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
           <h2 className="font-headline text-3xl md:text-4xl font-bold text-primary-foreground/90 my-4">
             {pageTitle}
           </h2>
           <div className="flex w-full max-w-xl justify-between items-center mb-4 px-1">
-              <Button variant="outline" onClick={() => router.push('/dashboard')}>
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Regresar
-              </Button>
-              <div className="flex items-center gap-2">
-                {Array.from({length: gameState.lives}).map((_, i) => (
-                    <Heart key={`life-${i}`} className="h-6 w-6 text-red-500 fill-current" />
-                ))}
-                {Array.from({length: 3 - gameState.lives}).map((_, i) => (
-                    <Heart key={`lost-${i}`} className="h-6 w-6 text-muted-foreground/50" />
-                ))}
-              </div>
-              <Button variant="secondary" onClick={handleHelpClick} disabled={gameState.isGameOver}>
-                  <LifeBuoy className="mr-2 h-4 w-4" />
-                  Ayuda
-              </Button>
+            <Button variant="outline" onClick={() => router.push('/dashboard')}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Regresar
+            </Button>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: gameState.lives }).map((_, i) => (
+                <Heart key={`life-${i}`} className="h-6 w-6 text-red-500 fill-current" />
+              ))}
+              {Array.from({ length: 3 - gameState.lives }).map((_, i) => (
+                <Heart key={`lost-${i}`} className="h-6 w-6 text-muted-foreground/50" />
+              ))}
+              {/* Botón de mute música */}
+              {musicFiles.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={isMuted ? 'Activar música' : 'Silenciar música'}
+                  onClick={() => {
+                    setIsMuted((prev) => !prev);
+                    if (audioRef.current) audioRef.current.muted = !isMuted;
+                  }}
+                >
+                  {isMuted ? <VolumeX className="h-6 w-6" /> : <Volume2 className="h-6 w-6" />}
+                </Button>
+              )}
+            </div>
+            <Button variant="secondary" onClick={handleHelpClick} disabled={gameState.isGameOver}>
+              <LifeBuoy className="mr-2 h-4 w-4" />
+              Ayuda
+            </Button>
           </div>
           <SudokuBoard 
             key={puzzleData.level}
