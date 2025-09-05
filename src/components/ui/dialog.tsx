@@ -109,15 +109,9 @@ const DialogDescription = React.forwardRef<
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
-
-const VisuallyHidden = React.forwardRef<
-  React.ElementRef<typeof VisuallyHiddenPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof VisuallyHiddenPrimitive.Root>
->(({ ...props }, ref) => {
-  return <VisuallyHiddenPrimitive.Root ref={ref} {...props} />
-})
-VisuallyHidden.displayName = VisuallyHiddenPrimitive.Root.displayName
-
+const VisuallyHidden = VisuallyHiddenPrimitive.Root;
+const VisuallyHiddenTitle = DialogTitle;
+const VisuallyHiddenDescription = DialogDescription;
 
 export {
   Dialog,
@@ -131,4 +125,6 @@ export {
   DialogTitle,
   DialogDescription,
   VisuallyHidden,
+  VisuallyHiddenTitle,
+  VisuallyHiddenDescription as VisuallyHiddenDesc
 }

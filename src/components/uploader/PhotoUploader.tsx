@@ -13,11 +13,12 @@ import { puzzles } from '@/lib/sudoku';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, Trash2, Eye, Music, X, PlusCircle, Save, GripVertical, ArrowUp, ArrowDown, BookOpen } from 'lucide-react';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
-import { Dialog, DialogContent, DialogDescription, DialogTitle as VisuallyHiddenTitle, VisuallyHidden } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { FinalSurprise } from '../game/FinalSurprise';
+import { VisuallyHidden, DialogTitle as VisuallyHiddenTitle, DialogDescription as VisuallyHiddenDesc } from '@/components/ui/dialog';
 
 
 const defaultMessages: {[key: string]: string} = {
@@ -218,7 +219,7 @@ function StoryManager() {
     const handleFileChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            if (file.size > 1 * 1024 * 1024) {
+            if (file.size > 1 * 1024 * 1024) { // 1MB limit
                 toast({ variant: "destructive", title: "Imagen demasiado grande" });
                 return;
             }
@@ -595,7 +596,7 @@ export function PhotoUploader() {
             <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-labelledby="preview-title" aria-describedby="preview-desc">
                  <VisuallyHidden>
                    <VisuallyHiddenTitle id="preview-title">Vista Previa del Recuerdo</VisuallyHiddenTitle>
-                   <DialogDescription id="preview-desc">{previewing.message}</DialogDescription>
+                   <VisuallyHiddenDesc id="preview-desc">{previewing.message}</VisuallyHiddenDesc>
                  </VisuallyHidden>
                  <div className="relative aspect-square w-full">
                      <CompletionOverlay

@@ -121,13 +121,13 @@ export default function GalleryPage() {
                      <Card 
                         className={cn(
                         "w-full max-w-sm group relative overflow-hidden rounded-lg flex flex-col items-center justify-center text-center p-4 transition-all",
-                        allLevelsCompleted ? 
+                        allLevelsCompleted && storySlides.length > 0 ? 
                         "bg-accent/80 border-accent cursor-pointer hover:shadow-lg hover:-translate-y-1" :
                         "bg-muted/60"
                         )}
                         onClick={() => allLevelsCompleted && storySlides.length > 0 && setShowFinalSurprise(true)}
                     >
-                        {allLevelsCompleted ? (
+                        {allLevelsCompleted && storySlides.length > 0 ? (
                         <>
                             <Trophy className="h-16 w-16 text-accent-foreground mb-4 transition-transform group-hover:scale-110" />
                             <CardTitle className="font-headline text-xl text-accent-foreground">¡Premio Final!</CardTitle>
@@ -138,7 +138,9 @@ export default function GalleryPage() {
                            <Package className="h-16 w-16 text-muted-foreground/60 mb-4" />
                            <CardTitle className="font-headline text-xl text-foreground/80">Premio Bloqueado</CardTitle>
                            <CardDescription className="text-muted-foreground/80 mt-1">
-                                Completa {levelsToGo} {levelsToGo === 1 ? 'nivel más' : 'niveles más'} para desbloquear.
+                                {allLevelsCompleted && storySlides.length === 0 
+                                ? 'El creador del juego aún no ha preparado la sorpresa.'
+                                : `Completa ${levelsToGo} ${levelsToGo === 1 ? 'nivel más' : 'niveles más'} para desbloquear.`}
                            </CardDescription>
                         </>
                         )}
