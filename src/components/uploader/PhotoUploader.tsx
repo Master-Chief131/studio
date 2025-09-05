@@ -7,17 +7,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-// import { getFromStorage, saveToStorage } from '@/lib/storage';
-import type { Photos, PhotoData, HelpQuestion } from '@/types';
+import type { Photos, PhotoData, HelpQuestion, StorySlide } from '@/types';
 import Image from 'next/image';
 import { puzzles } from '@/lib/sudoku';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, Trash2, Eye, Music, X, PlusCircle, Save } from 'lucide-react';
+import { Upload, Trash2, Eye, Music, X, PlusCircle, Save, GripVertical, ArrowUp, ArrowDown, BookOpen } from 'lucide-react';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
-import { Dialog, DialogContent, DialogDescription, DialogTitle as VisuallyHiddenTitle, VisuallyHidden } from '@/components/ui/dialog';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Textarea } from '../ui/textarea';
 import { Separator } from '../ui/separator';
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
+import { FinalSurprise } from '../game/FinalSurprise';
+import { VisuallyHidden, DialogTitle as VisuallyHiddenTitle, DialogDescription as VisuallyHiddenDesc } from '@/components/ui/dialog';
 
 
 const defaultMessages: {[key: string]: string} = {
@@ -176,6 +177,128 @@ function HelpQuestionsManager() {
     );
 }
 
+function StoryManager() {
+    const [slides, setSlides] = useState<StorySlide[]>([]);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        fetch('/api/admin/story')
+            .then(res => res.json())
+            .then(data => setSlides(Array.isArray(data) ? data : []));
+    }, []);
+
+    const saveStory = async (newSlides: StorySlide[]) => {
+        setSlides(newSlides);
+        await fetch('/api/admin/story', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newSlides),
+        });
+    };
+
+    const handleAddSlide = () => {
+        const newSlide = { id: crypto.randomUUID(), imageUrl: '', text: '' };
+        saveStory([...slides, newSlide]);
+    };
+
+    const handleRemoveSlide = (id: string) => {
+        saveStory(slides.filter(s => s.id !== id));
+        toast({ title: "Diapositiva eliminada", variant: "destructive" });
+    };
+
+    const handleUpdateText = (id: string, text: string) => {
+        const newSlides = slides.map(s => (s.id === id ? { ...s, text } : s));
+        setSlides(newSlides); // Update local state immediately for better UX
+    };
+    
+    const handleUpdateImage = (id: string, imageUrl: string) => {
+        const newSlides = slides.map(s => (s.id === id ? { ...s, imageUrl } : s));
+        saveStory(newSlides);
+    }
+    
+    const handleFileChange = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 1 * 1024 * 1024) { // 1MB limit
+                toast({ variant: "destructive", title: "Imagen demasiado grande" });
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                handleUpdateImage(id, reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const moveSlide = (index: number, direction: 'up' | 'down') => {
+        if ((direction === 'up' && index === 0) || (direction === 'down' && index === slides.length - 1)) {
+            return;
+        }
+        const newSlides = [...slides];
+        const slide = newSlides[index];
+        newSlides.splice(index, 1);
+        newSlides.splice(index + (direction === 'down' ? 1 : -1), 0, slide);
+        saveStory(newSlides);
+    };
+
+    return (
+        <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h3 className="font-headline text-lg">Story Time Final</h3>
+                    <CardDescription>Crea la secuencia de fotos y textos para la sorpresa final.</CardDescription>
+                </div>
+                <Button onClick={handleAddSlide}>
+                    <PlusCircle className="mr-2" /> Añadir Diapositiva
+                </Button>
+            </div>
+            
+            <div className="space-y-4">
+                {slides.map((slide, index) => (
+                    <Card key={slide.id} className="p-4 flex flex-col sm:flex-row gap-4">
+                        <div className="flex-shrink-0 flex sm:flex-col items-center gap-2">
+                           <Button size="icon" variant="ghost" onClick={() => moveSlide(index, 'up')} disabled={index === 0}><ArrowUp className="w-4 h-4" /></Button>
+                           <span className="font-bold">{index + 1}</span>
+                           <Button size="icon" variant="ghost" onClick={() => moveSlide(index, 'down')} disabled={index === slides.length - 1}><ArrowDown className="w-4 h-4" /></Button>
+                        </div>
+                        <div className='flex-shrink-0 w-32 h-32 bg-muted rounded-md flex items-center justify-center relative'>
+                             {slide.imageUrl ? (
+                                <Image src={slide.imageUrl} alt={`Diapositiva ${index+1}`} fill objectFit="cover" className="rounded-md" />
+                            ) : (
+                                <div className="text-center text-muted-foreground p-2">
+                                    <Upload className="h-6 w-6 mx-auto" />
+                                    <p className="text-xs mt-1">Subir Imagen</p>
+                                </div>
+                            )}
+                             <Input 
+                                id={`story-img-${slide.id}`} 
+                                type="file" 
+                                accept="image/*" 
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                onChange={(e) => handleFileChange(slide.id, e)}
+                            />
+                        </div>
+                        <div className="flex-grow space-y-2">
+                            <Label htmlFor={`story-text-${slide.id}`}>Texto de la Diapositiva</Label>
+                            <Textarea 
+                                id={`story-text-${slide.id}`}
+                                value={slide.text}
+                                onChange={(e) => handleUpdateText(slide.id, e.target.value)}
+                                onBlur={() => saveStory(slides)} // Save on blur
+                                placeholder="Escribe la historia de este momento..."
+                                rows={3}
+                            />
+                        </div>
+                         <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={() => handleRemoveSlide(slide.id)}>
+                            <Trash2 className="w-4 h-4" />
+                        </Button>
+                    </Card>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 export function PhotoUploader() {
   const [selectedLevel, setSelectedLevel] = useState('1');
@@ -183,7 +306,9 @@ export function PhotoUploader() {
   const [currentDescription, setCurrentDescription] = useState('');
   const [photos, setPhotos] = useState<Photos>({});
   const [musicFiles, setMusicFiles] = useState<string[]>([]);
+  const [story, setStory] = useState<StorySlide[]>([]);
   const [previewing, setPreviewing] = useState<PhotoData | null>(null);
+  const [previewingStory, setPreviewingStory] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -195,6 +320,9 @@ export function PhotoUploader() {
       .then(data => {
         if (data && Array.isArray(data.files)) setMusicFiles(data.files);
       });
+     fetch('/api/admin/story')
+        .then(res => res.json())
+        .then(data => setStory(Array.isArray(data) ? data : []));
   }, []);
 
   useEffect(() => {
@@ -359,6 +487,10 @@ export function PhotoUploader() {
           )}
 
           <Separator className="my-6" />
+          
+          <StoryManager />
+          
+          <Separator className="my-6" />
 
           <HelpQuestionsManager />
 
@@ -414,7 +546,12 @@ export function PhotoUploader() {
             </Button>
 
 
-          <h3 className="font-headline text-lg pt-4">Niveles Actuales</h3>
+          <div className="flex items-center justify-between pt-4 mt-4 border-t">
+              <h3 className="font-headline text-lg">Galería de Niveles</h3>
+              <Button variant="outline" onClick={() => setPreviewingStory(true)} disabled={story.length === 0}>
+                  <Eye className="mr-2" /> Vista Previa del Story Time
+              </Button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {puzzles.map((p) => (
               <Card key={p.level} className="relative group">
@@ -462,7 +599,7 @@ export function PhotoUploader() {
             <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-labelledby="preview-title" aria-describedby="preview-desc">
                  <VisuallyHidden>
                    <VisuallyHiddenTitle id="preview-title">Vista Previa del Recuerdo</VisuallyHiddenTitle>
-                   <DialogDescription id="preview-desc">{previewing.message}</DialogDescription>
+                   <VisuallyHiddenDesc id="preview-desc">{previewing.message}</VisuallyHiddenDesc>
                  </VisuallyHidden>
                  <div className="relative aspect-square w-full">
                      <CompletionOverlay
@@ -471,6 +608,19 @@ export function PhotoUploader() {
                          onBack={() => setPreviewing(null)}
                      />
                  </div>
+            </DialogContent>
+        </Dialog>
+      )}
+       {previewingStory && (
+         <Dialog open={previewingStory} onOpenChange={setPreviewingStory}>
+            <DialogContent className="p-0 border-0 max-w-4xl bg-transparent" aria-labelledby="story-preview-title">
+                 <VisuallyHidden>
+                   <VisuallyHiddenTitle id="story-preview-title">Vista Previa del Story Time</VisuallyHiddenTitle>
+                 </VisuallyHidden>
+                 <FinalSurprise
+                    slides={story}
+                    onBack={() => setPreviewingStory(false)}
+                 />
             </DialogContent>
         </Dialog>
       )}

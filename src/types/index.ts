@@ -39,3 +39,9 @@ export type GameState = {
     lives: number;
     isGameOver: boolean;
 }
+
+export type StorySlide = {
+  id: string;
+  imageUrl: string;
+  text: string;
+}
