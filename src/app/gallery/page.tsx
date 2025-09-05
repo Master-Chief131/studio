@@ -5,13 +5,15 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { getFromStorage } from '@/lib/storage';
 import { Header } from '@/components/shared/Header';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
 import { Dialog, DialogContent, DialogDescription, DialogTitle as VisuallyHiddenTitle, VisuallyHidden } from '@/components/ui/dialog';
 import Image from 'next/image';
 import type { PhotoData, Photos } from '@/types';
-import { ArrowLeft, Maximize } from 'lucide-react';
+import { ArrowLeft, Maximize, Gift } from 'lucide-react';
+import { puzzles } from '@/lib/sudoku';
+import { FinalSurprise } from '@/components/game/FinalSurprise';
 
 
 type UnlockedPhoto = PhotoData & {
@@ -23,6 +25,7 @@ export default function GalleryPage() {
   const router = useRouter();
   const [unlockedPhotos, setUnlockedPhotos] = useState<UnlockedPhoto[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<UnlockedPhoto | null>(null);
+  const [showFinalSurprise, setShowFinalSurprise] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -52,6 +55,8 @@ export default function GalleryPage() {
   if (loading) {
     return <div>Cargando...</div>;
   }
+  
+  const allLevelsCompleted = unlockedPhotos.length === puzzles.length;
 
   return (
     <>
@@ -79,7 +84,7 @@ export default function GalleryPage() {
                     <CardTitle className="text-white font-headline text-lg">Nivel {photo.level}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0 aspect-square">
-                    <Image src={photo.imageUrl} alt={`Recuerdo del nivel ${photo.level}`} layout="fill" objectFit="cover" />
+                    <Image src={photo.imageUrl} alt={`Recuerdo del nivel ${photo.level}`} fill objectFit="cover" />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
                        <Button
                             variant="secondary"
@@ -93,6 +98,16 @@ export default function GalleryPage() {
                   </CardContent>
                 </Card>
               ))}
+               {allLevelsCompleted && (
+                <Card 
+                  className="group relative overflow-hidden rounded-lg bg-accent/80 border-accent cursor-pointer flex flex-col items-center justify-center text-center p-4 hover:shadow-lg hover:-translate-y-1 transition-all"
+                  onClick={() => setShowFinalSurprise(true)}
+                >
+                  <Gift className="h-16 w-16 text-accent-foreground/80 mb-4 transition-transform group-hover:scale-110" />
+                  <CardTitle className="font-headline text-xl text-accent-foreground">¡Sorpresa Final!</CardTitle>
+                  <CardDescription className="text-accent-foreground/70 mt-1">Haz click para revelar</CardDescription>
+                </Card>
+              )}
             </div>
           ) : (
             <div className="text-center py-20">
@@ -115,6 +130,22 @@ export default function GalleryPage() {
                          imageUrl={selectedPhoto.imageUrl}
                          message={selectedPhoto.message}
                          onBack={() => setSelectedPhoto(null)}
+                     />
+                 </div>
+            </DialogContent>
+        </Dialog>
+      )}
+
+      {showFinalSurprise && (
+         <Dialog open={showFinalSurprise} onOpenChange={setShowFinalSurprise}>
+            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-labelledby="final-surprise-title" aria-describedby="final-surprise-desc">
+                 <VisuallyHidden>
+                   <VisuallyHiddenTitle id="final-surprise-title">¡Sorpresa Final!</VisuallyHiddenTitle>
+                   <DialogDescription id="final-surprise-desc">Has desbloqueado el premio final.</DialogDescription>
+                 </VisuallyHidden>
+                 <div className="relative aspect-square w-full">
+                     <FinalSurprise
+                         onBack={() => setShowFinalSurprise(false)}
                      />
                  </div>
             </DialogContent>

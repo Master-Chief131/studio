@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
@@ -191,6 +189,13 @@ export default function PlayPage() {
     }
   }
 
+  const handleCompletion = useCallback(() => {
+    const completedLevels = getFromStorage<number[]>('sudoku-completed-levels') || [];
+    if (!completedLevels.includes(puzzleData!.level)) {
+        saveToStorage('sudoku-completed-levels', [...completedLevels, puzzleData!.level]);
+    }
+    setIsComplete(true);
+  }, [puzzleData]);
 
   if (authLoading || loading || isNaN(level)) {
     return (
@@ -245,7 +250,7 @@ export default function PlayPage() {
             helpCell={helpCell}
             gameState={gameState}
             onError={handleError}
-            onComplete={() => setIsComplete(true)}
+            onComplete={handleCompletion}
             selectedCell={selectedCell}
             setSelectedCell={setSelectedCell}
           />

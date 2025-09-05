@@ -16,6 +16,8 @@ interface SudokuGridProps {
   setSelectedCell: (cell: Cell | null) => void;
   errors: boolean[][];
   correctCell?: Cell | null;
+  isComplete: boolean;
+  isGameOver: boolean;
 }
 
 export function SudokuGrid({ 
@@ -27,7 +29,9 @@ export function SudokuGrid({
   selectedCell,
   setSelectedCell,
   errors,
-  correctCell
+  correctCell,
+  isComplete,
+  isGameOver
 }: SudokuGridProps) {
   const [revealedCell, setRevealedCell] = useState<Cell | null>(null);
   const isMobile = useIsMobile();
@@ -41,11 +45,20 @@ export function SudokuGrid({
   }, [helpCell]);
 
   const handleCellClick = (row: number, col: number) => {
+    if (isGameOver || isComplete) return;
     setSelectedCell({ row, col });
   }
 
   const getSubgrid = (row: number, col: number) => {
       return Math.floor(row / 3) * 3 + Math.floor(col / 3);
+  }
+
+  if (isGameOver) {
+      return (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm rounded-lg">
+              <p className="font-headline text-2xl text-white">Fin del juego</p>
+          </div>
+      );
   }
 
   return (
@@ -58,23 +71,32 @@ export function SudokuGrid({
             || (correctCell && correctCell.row === rowIndex && correctCell.col === colIndex);
           const isSubgridRevealed = revealedBlocks[getSubgrid(rowIndex, colIndex)];
           const isSelected = selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex;
-          // Nuevo: resaltar todas las celdas con el mismo número que la celda seleccionada
           const selectedValue = selectedCell ? currentGrid[selectedCell.row][selectedCell.col] : null;
           const isSameValue = selectedValue && cell === selectedValue;
-
+          
+          if (isComplete) {
+            return (
+              <div
+                key={`${rowIndex}-${colIndex}`}
+                className="relative flex items-center justify-center aspect-square transition-all duration-1000 bg-transparent"
+              >
+              </div>
+            );
+          }
+          
           return (
             <div
               key={`${rowIndex}-${colIndex}`}
               onClick={() => handleCellClick(rowIndex, colIndex)}
               className={cn(
-                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-1000",
+                "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-300",
                 "cursor-pointer",
                 (colIndex + 1) % 3 === 0 && colIndex < 8 && "border-r-2 border-r-primary/50",
                 (rowIndex + 1) % 3 === 0 && rowIndex < 8 && "border-b-2 border-b-primary/50",
                 isRevealed && "bg-accent/50",
                 isSubgridRevealed && "bg-transparent border-transparent",
                 isSelected && "bg-accent/30 ring-2 ring-accent z-10",
-                isSameValue && !isSelected && "bg-yellow-100/60"
+                isSameValue && !isSelected && "bg-primary/20"
               )}
             >
               <input
@@ -84,7 +106,7 @@ export function SudokuGrid({
                 maxLength={1}
                 value={cell || ''}
                 onChange={(e) => {
-                  if (isMobile) return; // No permitir escribir en móvil
+                  if (isMobile) return; 
                   const value = e.target.value === '' ? null : parseInt(e.target.value, 10);
                   if ((value && !isNaN(value) && value > 0 && value <= 9) || value === null) {
                       onInputChange(rowIndex, colIndex, value);
@@ -92,7 +114,7 @@ export function SudokuGrid({
                 }}
                 readOnly={isGiven || isMobile}
                 className={cn(
-                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000',
+                  'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-300',
                    isGiven ? 'text-primary-foreground/80 cursor-default' : 'text-accent-foreground cursor-pointer',
                   isError && 'text-destructive',
                   isRevealed && 'text-green-600',
