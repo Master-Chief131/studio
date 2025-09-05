@@ -1,11 +1,12 @@
 
+
 'use client';
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
-import { getFromStorage } from '@/lib/storage';
+import { getFromStorage, saveToStorage } from '@/lib/storage';
 import { SudokuBoard } from '@/components/game/SudokuBoard';
 import { Header } from '@/components/shared/Header';
 import type { Puzzle, Photos, PhotoData, Cell, HelpQuestion, GameState, Grid } from '@/types';
@@ -14,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, LifeBuoy, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { HelpQuestionDialog } from '@/components/game/HelpQuestionDialog';
+import { CompletionOverlay } from '@/components/game/CompletionOverlay';
+import { Dialog, DialogContent, DialogDescription, DialogTitle as VisuallyHiddenTitle, VisuallyHidden } from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +25,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
 
 export default function PlayPage() {
@@ -36,6 +39,8 @@ export default function PlayPage() {
   const [photoData, setPhotoData] = useState<PhotoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [helpCell, setHelpCell] = useState<Cell | null>(null);
+  const [isComplete, setIsComplete] = useState(false);
+
 
   // Game State
   const [gameState, setGameState] = useState<GameState>({ lives: 3, isGameOver: false });
@@ -240,6 +245,7 @@ export default function PlayPage() {
             helpCell={helpCell}
             gameState={gameState}
             onError={handleError}
+            onComplete={() => setIsComplete(true)}
             selectedCell={selectedCell}
             setSelectedCell={setSelectedCell}
           />
@@ -254,6 +260,7 @@ export default function PlayPage() {
           onAnswer={handleQuestionAnswered}
         />
       )}
+      
       <AlertDialog open={gameState.isGameOver}>
         <AlertDialogContent>
             <AlertDialogHeader>
@@ -267,6 +274,24 @@ export default function PlayPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {isComplete && photoData && (
+         <Dialog open={isComplete} onOpenChange={(isOpen) => { if(!isOpen) { router.push('/dashboard')}}}>
+            <DialogContent className="p-0 border-0 max-w-2xl bg-transparent" aria-labelledby="completion-title" aria-describedby="completion-desc">
+                <VisuallyHidden>
+                  <VisuallyHiddenTitle id="completion-title">¡Nivel Completado!</VisuallyHiddenTitle>
+                  <DialogDescription id="completion-desc">{photoData.message}</DialogDescription>
+                </VisuallyHidden>
+                <div className="relative aspect-square w-full">
+                    <CompletionOverlay
+                        imageUrl={photoData.imageUrl}
+                        message={photoData.message}
+                        onBack={() => router.push('/dashboard')}
+                    />
+                </div>
+            </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }

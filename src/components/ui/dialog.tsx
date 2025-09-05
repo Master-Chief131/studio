@@ -5,6 +5,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import * as VisuallyHiddenPrimitive from '@radix-ui/react-visually-hidden';
 
 const Dialog = DialogPrimitive.Root
 
@@ -108,6 +109,16 @@ const DialogDescription = React.forwardRef<
 ))
 DialogDescription.displayName = DialogPrimitive.Description.displayName
 
+
+const VisuallyHidden = React.forwardRef<
+  React.ElementRef<typeof VisuallyHiddenPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof VisuallyHiddenPrimitive.Root>
+>(({ ...props }, ref) => {
+  return <VisuallyHiddenPrimitive.Root ref={ref} {...props} />
+})
+VisuallyHidden.displayName = VisuallyHiddenPrimitive.Root.displayName
+
+
 export {
   Dialog,
   DialogPortal,
@@ -119,4 +130,5 @@ export {
   DialogFooter,
   DialogTitle,
   DialogDescription,
+  VisuallyHidden,
 }
