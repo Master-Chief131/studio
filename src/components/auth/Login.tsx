@@ -74,7 +74,7 @@ export function Login() {
   return (
     <Card className="w-full max-w-sm z-10 shadow-lg bg-card/80 backdrop-blur-sm border-primary/20">
       <CardHeader>
-        <CardTitle className="font-headline text-2xl">Ingresa tu Nombre</CardTitle>
+        <CardTitle className="font-headline text-2xl">My Beloved</CardTitle>
         <CardDescription>
           {/* Usa '{PLAYER_USER}' para jugar o '{ADMIN_USER}' para configurar el juego. */}
           Con mucho amor para Abigahyl!

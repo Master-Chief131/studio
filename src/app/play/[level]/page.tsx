@@ -1,10 +1,8 @@
 'use client';
 
+
+
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-  // Música de fondo
-  const [musicFiles, setMusicFiles] = useState<string[]>([]);
-  const [currentTrack, setCurrentTrack] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { getPuzzle, transformPuzzle } from '@/lib/sudoku';
@@ -15,7 +13,6 @@ import type { Puzzle, Photos, PhotoData, Cell, HelpQuestion, GameState, Grid } f
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, LifeBuoy, Heart, Volume2, VolumeX } from 'lucide-react';
-  const [isMuted, setIsMuted] = useState(false);
 import { useToast } from '@/hooks/use-toast';
 import { HelpQuestionDialog } from '@/components/game/HelpQuestionDialog';
 import { CompletionOverlay } from '@/components/game/CompletionOverlay';
@@ -30,8 +27,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-
 export default function PlayPage() {
+  // Música de fondo
+  const [musicFiles, setMusicFiles] = useState<string[]>([]);
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -60,61 +61,23 @@ export default function PlayPage() {
   const pageTitle = useMemo(() => `Nivel ${level}`, [level]);
 
   useEffect(() => {
-    if (authLoading) {
-      return;
-    // Obtener archivos de música
-    fetch('/api/admin/music')
-      .then(res => res.json())
-      .then(data => {
-        if (data && Array.isArray(data.files)) setMusicFiles(data.files);
-      });
-  // Cambiar de pista al terminar
-  useEffect(() => {
-    if (!musicFiles.length) return;
-    const audio = audioRef.current;
-    if (!audio) return;
-    const handleEnded = () => {
-      setCurrentTrack((prev) => (prev + 1) % musicFiles.length);
-    };
-    audio.addEventListener('ended', handleEnded);
-    return () => {
-      audio.removeEventListener('ended', handleEnded);
-    };
-  }, [musicFiles]);
-
-  // Cambiar src cuando cambia la pista
-  useEffect(() => {
-    if (!musicFiles.length) return;
-    const audio = audioRef.current;
-    if (audio) {
-      audio.src = `/music/${musicFiles[currentTrack]}`;
-      audio.play().catch(() => {});
-    }
-  }, [currentTrack, musicFiles]);
-    }
+    if (authLoading) return;
     if (!user) {
       router.push('/');
       return;
     }
-    
     if (isNaN(level)) {
-        router.push('/dashboard');
-        return;
+      router.push('/dashboard');
+      return;
     }
-    
     const basePuzzle = getPuzzle(level);
     const randomPuzzle = basePuzzle ? transformPuzzle(basePuzzle) : null;
-
     if (!randomPuzzle) {
-        router.push('/dashboard');
-        return;
+      router.push('/dashboard');
+      return;
     }
-
-
-    const photos = getFromStorage<Photos>('sudoku-photos');
     setPuzzleData(randomPuzzle);
     setCurrentGrid(randomPuzzle.puzzle);
-
     // Fetch help questions from the server
     fetch('/api/admin/questions')
       .then(res => res.json())
@@ -122,13 +85,19 @@ export default function PlayPage() {
         setQuestions(Array.isArray(data) ? data : []);
       })
       .catch(() => setQuestions([]));
-
-    if (photos && photos[randomPuzzle.level]) {
-        setPhotoData(photos[randomPuzzle.level]);
-    }
     setLoading(false);
-
   }, [level, router, user, authLoading]);
+
+  // Solo en cliente: obtener fotos de localStorage y setPhotoData
+  useEffect(() => {
+    if (typeof window === 'undefined' || !puzzleData) return;
+    const photos = getFromStorage<Photos>('sudoku-photos');
+    if (photos && photos[puzzleData.level]) {
+      setPhotoData(photos[puzzleData.level]);
+    } else {
+      setPhotoData(null);
+    }
+  }, [puzzleData]);
 
   const triggerHelp = useCallback(() => {
     if (!currentGrid || !puzzleData) return;
