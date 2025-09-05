@@ -305,8 +305,8 @@ export function PhotoUploader() {
   const [currentMessage, setCurrentMessage] = useState('');
   const [currentDescription, setCurrentDescription] = useState('');
   const [photos, setPhotos] = useState<Photos>({});
+  const [musicFiles, setMusicFiles] = useState<string[]>([]);
   const [story, setStory] = useState<StorySlide[]>([]);
-  const [backgroundMusic, setBackgroundMusic] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState<PhotoData | null>(null);
   const [previewingStory, setPreviewingStory] = useState(false);
   const { toast } = useToast();
@@ -318,7 +318,7 @@ export function PhotoUploader() {
     fetch('/api/admin/music')
       .then(res => res.json())
       .then(data => {
-        if (data && data.music) setBackgroundMusic(data.music);
+        if (data && Array.isArray(data.files)) setMusicFiles(data.files);
       });
      fetch('/api/admin/story')
         .then(res => res.json())
@@ -413,46 +413,44 @@ export function PhotoUploader() {
     }
   }
 
-  const handleMusicUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit for audio
+  const handleMusicUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > 10 * 1024 * 1024) { // 10MB por archivo
         toast({
           variant: "destructive",
-          title: "Archivo de audio demasiado grande",
-          description: "Por favor, selecciona un archivo de menos de 2MB."
+          title: `Archivo demasiado grande: ${file.name}`,
+          description: "Por favor, selecciona archivos de menos de 10MB."
         });
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const musicDataUrl = reader.result as string;
-        setBackgroundMusic(musicDataUrl);
-        await fetch('/api/admin/music', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ music: musicDataUrl }),
-        });
-        toast({
-          title: "¡Música de fondo actualizada!",
-          description: "El jugador escuchará esta música en su sesión."
-        });
-      };
-      reader.readAsDataURL(file);
+      formData.append('files', file);
     }
+    const res = await fetch('/api/admin/music', {
+      method: 'PUT',
+      body: formData,
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setMusicFiles(prev => [...prev, ...(data.files || [])]);
+      toast({ title: "¡Archivos de música subidos!" });
+    } else {
+      toast({ title: "Error al subir archivos de música", variant: "destructive" });
+    }
+    e.target.value = '';
   };
 
-  const handleRemoveMusic = async () => {
-      setBackgroundMusic(null);
-      await fetch('/api/admin/music', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ music: null }),
-      });
-      toast({
-        title: "Música de fondo eliminada.",
-        variant: "destructive"
-      });
+  const handleRemoveMusic = async (filename: string) => {
+    await fetch('/api/admin/music', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename }),
+    });
+    setMusicFiles(prev => prev.filter(f => f !== filename));
+    toast({ title: `Archivo eliminado: ${filename}`, variant: "destructive" });
   }
 
   return (
@@ -464,22 +462,27 @@ export function PhotoUploader() {
         </CardHeader>
         <CardContent className="space-y-4">
           
+
           <h3 className="font-headline text-lg pt-4 border-t">Música de Fondo</h3>
           <div className="space-y-2">
-            <Label htmlFor="music-upload">Archivo de Audio (MP3, WAV, etc.)</Label>
-            <Input id="music-upload" type="file" accept="audio/*" onChange={handleMusicUpload} />
+            <Label htmlFor="music-upload">Archivos de Audio (MP3, puedes subir varios)</Label>
+            <Input id="music-upload" type="file" accept="audio/mp3" multiple onChange={handleMusicUpload} />
           </div>
-          {backgroundMusic && (
-             <div className="flex items-center gap-4 p-2 rounded-md bg-muted">
-                <Music className="h-5 w-5 text-muted-foreground" />
-                <div className="flex-1">
-                    <p className="text-sm font-medium">Música establecida.</p>
-                    <p className="text-xs text-muted-foreground">Los jugadores la escucharán de fondo.</p>
-                </div>
-                <audio src={backgroundMusic} controls className='h-8'/>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleRemoveMusic}>
-                    <X className="h-4 w-4" />
-                </Button>
+          {musicFiles.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-sm">Archivos subidos:</p>
+              <ul className="space-y-2">
+                {musicFiles.map((file) => (
+                  <li key={file} className="flex items-center gap-2 bg-muted p-2 rounded">
+                    <Music className="h-5 w-5 text-muted-foreground" />
+                    <span className="flex-1 text-xs">{file}</span>
+                    <audio src={`/music/${file}`} controls className="h-8" preload="none" />
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleRemoveMusic(file)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
