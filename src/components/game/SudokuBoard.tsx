@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import type { Puzzle, Grid, PhotoData, Cell, GameState } from '@/types';
 import { PhotoReveal } from './PhotoReveal';
 import { SudokuGrid } from './SudokuGrid';
+import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { CompletionOverlay } from './CompletionOverlay';
 import { getFromStorage, saveToStorage } from '@/lib/storage';
@@ -36,9 +37,14 @@ export function SudokuBoard({
   const [revealedBlocks, setRevealedBlocks] = useState<boolean[]>(Array(9).fill(false));
   const [isComplete, setIsComplete] = useState(false);
   const [errors, setErrors] = useState<boolean[][]>(Array(9).fill(null).map(() => Array(9).fill(false)));
+  const [correctCell, setCorrectCell] = useState<Cell | null>(null);
+  const correctCellTimeout = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
 
   const handleInputChange = (row: number, col: number, value: number | null) => {
+    // No permitir sobreescribir un número correcto
+    if (currentGrid[row][col] === puzzleData.solution[row][col]) return;
+
     const newGrid = currentGrid.map((r, rowIndex) =>
       r.map((cell, colIndex) => (rowIndex === row && colIndex === col ? value : cell))
     );
@@ -51,15 +57,24 @@ export function SudokuBoard({
       newErrors[row][col] = true;
     } else {
       newErrors[row][col] = false;
+      // Si el valor es correcto y no es null, resaltar en verde
+      if (value !== null && value === puzzleData.solution[row][col]) {
+        setCorrectCell({ row, col });
+        if (correctCellTimeout.current) clearTimeout(correctCellTimeout.current);
+        correctCellTimeout.current = setTimeout(() => setCorrectCell(null), 1200);
+      }
     }
     setErrors(newErrors);
   };
 
   const handleNumberPadClick = (number: number) => {
     if (selectedCell) {
-      // Do not allow overwriting correct original numbers
-      if(puzzleData.puzzle[selectedCell.row][selectedCell.col] === null) {
-          handleInputChange(selectedCell.row, selectedCell.col, number);
+      // No permitir sobreescribir un número correcto
+      if (
+        puzzleData.puzzle[selectedCell.row][selectedCell.col] === null &&
+        currentGrid[selectedCell.row][selectedCell.col] !== puzzleData.solution[selectedCell.row][selectedCell.col]
+      ) {
+        handleInputChange(selectedCell.row, selectedCell.col, number);
       }
     }
   }
@@ -119,6 +134,7 @@ export function SudokuBoard({
             selectedCell={selectedCell}
             setSelectedCell={setSelectedCell}
             errors={errors}
+            correctCell={correctCell}
             />
         )}
         {isComplete && photoData && (
@@ -129,12 +145,13 @@ export function SudokuBoard({
             />
         )}
         </div>
-        {!isComplete && !gameState.isGameOver && (
-            <NumberPad 
-                onNumberClick={handleNumberPadClick}
-                onEraseClick={handleEraseClick}
-            />
-        )}
+    {!isComplete && !gameState.isGameOver && (
+      <NumberPad 
+        onNumberClick={handleNumberPadClick}
+        onEraseClick={handleEraseClick}
+        currentGrid={currentGrid}
+      />
+    )}
     </div>
   );
 }

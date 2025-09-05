@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getFromStorage, saveToStorage } from '@/lib/storage';
+// import { getFromStorage, saveToStorage } from '@/lib/storage';
 import type { Photos, PhotoData, HelpQuestion } from '@/types';
 import Image from 'next/image';
 import { puzzles } from '@/lib/sudoku';
@@ -46,15 +46,21 @@ function HelpQuestionsManager() {
         correctAnswerIndex: 0,
     });
     
-    useEffect(() => {
-        const storedQuestions = getFromStorage<HelpQuestion[]>('sudoku-help-questions') || [];
-        setQuestions(storedQuestions);
-    }, []);
 
-    const saveQuestions = (updatedQuestions: HelpQuestion[]) => {
-        setQuestions(updatedQuestions);
-        saveToStorage('sudoku-help-questions', updatedQuestions);
-    };
+  useEffect(() => {
+    fetch('/api/admin/questions')
+      .then(res => res.json())
+      .then(data => setQuestions(Array.isArray(data) ? data : []));
+  }, []);
+
+  const saveQuestions = async (updatedQuestions: HelpQuestion[]) => {
+    setQuestions(updatedQuestions);
+    await fetch('/api/admin/questions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedQuestions),
+    });
+  };
 
     const handleAddQuestion = () => {
         if (!editingQuestion.question || editingQuestion.options?.some(o => !o)) {
@@ -182,12 +188,14 @@ export function PhotoUploader() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const storedPhotos = getFromStorage<Photos>('sudoku-photos') || {};
-    setPhotos(storedPhotos);
-    const storedMusic = getFromStorage<string>('sudoku-background-music');
-    if(storedMusic) {
-        setBackgroundMusic(storedMusic);
-    }
+    fetch('/api/admin/photos')
+      .then(res => res.json())
+      .then(data => setPhotos(data || {}));
+    fetch('/api/admin/music')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.music) setBackgroundMusic(data.music);
+      });
   }, []);
 
   useEffect(() => {
@@ -195,7 +203,7 @@ export function PhotoUploader() {
     setCurrentDescription(photos[selectedLevel]?.description || defaultLevelDescriptions[selectedLevel] || '');
   }, [selectedLevel, photos]);
 
-  const handleSaveData = (level: string, data: Partial<PhotoData>) => {
+  const handleSaveData = async (level: string, data: Partial<PhotoData>) => {
     const existingData = photos[level] || {};
     const newData: PhotoData = {
         imageUrl: data.imageUrl || existingData.imageUrl || '',
@@ -214,7 +222,11 @@ export function PhotoUploader() {
 
     const newPhotos = { ...photos, [level]: newData };
     setPhotos(newPhotos);
-    saveToStorage('sudoku-photos', newPhotos);
+    await fetch('/api/admin/photos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newPhotos),
+    });
     toast({
         title: `¡Datos del Nivel ${level} actualizados!`,
     });
@@ -253,11 +265,15 @@ export function PhotoUploader() {
     handleSaveData(selectedLevel, { message: currentMessage, description: currentDescription });
   }
 
-  const handleRemovePhoto = (level: string) => {
+  const handleRemovePhoto = async (level: string) => {
     const newPhotos = {...photos};
     delete newPhotos[level];
     setPhotos(newPhotos);
-    saveToStorage('sudoku-photos', newPhotos);
+    await fetch('/api/admin/photos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newPhotos),
+    });
     toast({
         title: `Datos del Nivel ${level} eliminados.`,
         variant: "destructive"
@@ -282,10 +298,14 @@ export function PhotoUploader() {
         return;
       }
       const reader = new FileReader();
-      reader.onloadend = () => {
+      reader.onloadend = async () => {
         const musicDataUrl = reader.result as string;
         setBackgroundMusic(musicDataUrl);
-        saveToStorage('sudoku-background-music', musicDataUrl);
+        await fetch('/api/admin/music', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ music: musicDataUrl }),
+        });
         toast({
           title: "¡Música de fondo actualizada!",
           description: "El jugador escuchará esta música en su sesión."
@@ -295,9 +315,13 @@ export function PhotoUploader() {
     }
   };
 
-  const handleRemoveMusic = () => {
+  const handleRemoveMusic = async () => {
       setBackgroundMusic(null);
-      saveToStorage('sudoku-background-music', null);
+      await fetch('/api/admin/music', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ music: null }),
+      });
       toast({
         title: "Música de fondo eliminada.",
         variant: "destructive"

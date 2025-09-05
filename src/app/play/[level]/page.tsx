@@ -73,17 +73,22 @@ export default function PlayPage() {
         return;
     }
 
+
     const photos = getFromStorage<Photos>('sudoku-photos');
-    const storedQuestions = getFromStorage<HelpQuestion[]>('sudoku-help-questions') || [];
-    
     setPuzzleData(randomPuzzle);
     setCurrentGrid(randomPuzzle.puzzle);
-    setQuestions(storedQuestions);
+
+    // Fetch help questions from the server
+    fetch('/api/admin/questions')
+      .then(res => res.json())
+      .then(data => {
+        setQuestions(Array.isArray(data) ? data : []);
+      })
+      .catch(() => setQuestions([]));
 
     if (photos && photos[randomPuzzle.level]) {
         setPhotoData(photos[randomPuzzle.level]);
     }
-    
     setLoading(false);
 
   }, [level, router, user, authLoading]);
