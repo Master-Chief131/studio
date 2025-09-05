@@ -51,7 +51,12 @@ export function FinalSurprise({ onBack, slides }: FinalSurpriseProps) {
                         <div className="p-1">
                             <Card>
                                 <CardContent className="flex flex-col items-center justify-center p-0 aspect-video relative rounded-lg overflow-hidden">
-                                     <Image src={slide.imageUrl} alt={`Diapositiva ${index + 1}`} fill objectFit="cover" />
+                                                                         <Image 
+                                                                             src={slide.imageUrl} 
+                                                                             alt={`Diapositiva ${index + 1}`}
+                                                                             fill
+                                                                             style={{ objectFit: 'contain', backgroundColor: 'black' }}
+                                                                         />
                                      <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/50 backdrop-blur-sm text-center">
                                         <p className="text-white text-base font-body">{slide.text}</p>
                                      </div>

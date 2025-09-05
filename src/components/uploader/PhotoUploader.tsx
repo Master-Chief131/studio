@@ -37,6 +37,7 @@ const defaultLevelDescriptions: {[key: string]: string} = {
   '5': "El último secreto está a punto de ser revelado."
 };
 
+// Convert to React component (capitalized, valid hook usage)
 function HelpQuestionsManager() {
     const { toast } = useToast();
     const [questions, setQuestions] = useState<HelpQuestion[]>([]);
@@ -63,31 +64,32 @@ function HelpQuestionsManager() {
   };
 
     const handleAddQuestion = () => {
-        if (!editingQuestion.question || editingQuestion.options?.some(o => !o)) {
-            toast({ title: "Por favor, completa todos los campos", variant: "destructive" });
-            return;
-        }
+    if (!editingQuestion.question || editingQuestion.options?.some(o => !o)) {
+      toast({ title: "Por favor, completa todos los campos", variant: "destructive" });
+      return;
+    }
 
-        const newQuestion: HelpQuestion = {
-            id: editingQuestion.id || crypto.randomUUID(),
-            ...editingQuestion,
-            question: editingQuestion.question!,
-            options: editingQuestion.options!,
-            correctAnswerIndex: editingQuestion.correctAnswerIndex!,
-        };
-
-        let updatedQuestions;
-        if(editingQuestion.id) {
-            updatedQuestions = questions.map(q => q.id === newQuestion.id ? newQuestion : q);
-            toast({ title: "¡Pregunta actualizada!" });
-        } else {
-            updatedQuestions = [...questions, newQuestion];
-            toast({ title: "¡Pregunta añadida!" });
-        }
-        
-        saveQuestions(updatedQuestions);
-        setEditingQuestion({ question: '', options: ['', '', '', ''], correctAnswerIndex: 0 });
+    // Only generate a new ID if adding a new question (not editing)
+    const id = editingQuestion.id ? editingQuestion.id : (typeof window !== 'undefined' && window.crypto ? window.crypto.randomUUID() : Math.random().toString(36).slice(2));
+    const newQuestion: HelpQuestion = {
+      id,
+      ...editingQuestion,
+      question: editingQuestion.question!,
+      options: editingQuestion.options!,
+      correctAnswerIndex: editingQuestion.correctAnswerIndex!,
     };
+
+    let updatedQuestions;
+    if(editingQuestion.id) {
+      updatedQuestions = questions.map(q => q.id === newQuestion.id ? newQuestion : q);
+      toast({ title: "¡Pregunta actualizada!" });
+    } else {
+      updatedQuestions = [...questions, newQuestion];
+      toast({ title: "¡Pregunta añadida!" });
+    }
+    saveQuestions(updatedQuestions);
+    setEditingQuestion({ question: '', options: ['', '', '', ''], correctAnswerIndex: 0 });
+  };
 
     const handleEdit = (question: HelpQuestion) => {
         setEditingQuestion(question);
@@ -177,6 +179,7 @@ function HelpQuestionsManager() {
     );
 }
 
+// Convert to React component (capitalized, valid hook usage)
 function StoryManager() {
     const [slides, setSlides] = useState<StorySlide[]>([]);
     const { toast } = useToast();
@@ -197,8 +200,10 @@ function StoryManager() {
     };
 
     const handleAddSlide = () => {
-        const newSlide = { id: crypto.randomUUID(), imageUrl: '', text: '' };
-        saveStory([...slides, newSlide]);
+  // Only generate ID on user action, not during render
+  const id = typeof window !== 'undefined' && window.crypto ? window.crypto.randomUUID() : Math.random().toString(36).slice(2);
+  const newSlide = { id, imageUrl: '', text: '' };
+  saveStory([...slides, newSlide]);
     };
 
     const handleRemoveSlide = (id: string) => {
@@ -262,22 +267,28 @@ function StoryManager() {
                            <span className="font-bold">{index + 1}</span>
                            <Button size="icon" variant="ghost" onClick={() => moveSlide(index, 'down')} disabled={index === slides.length - 1}><ArrowDown className="w-4 h-4" /></Button>
                         </div>
-                        <div className='flex-shrink-0 w-32 h-32 bg-muted rounded-md flex items-center justify-center relative'>
-                             {slide.imageUrl ? (
-                                <Image src={slide.imageUrl} alt={`Diapositiva ${index+1}`} fill objectFit="cover" className="rounded-md" />
-                            ) : (
-                                <div className="text-center text-muted-foreground p-2">
-                                    <Upload className="h-6 w-6 mx-auto" />
-                                    <p className="text-xs mt-1">Subir Imagen</p>
-                                </div>
-                            )}
-                             <Input 
-                                id={`story-img-${slide.id}`} 
-                                type="file" 
-                                accept="image/*" 
-                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                onChange={(e) => handleFileChange(slide.id, e)}
+                        <div className='flex-shrink-0 w-40 h-40 bg-black rounded-md flex items-center justify-center relative overflow-hidden'>
+                          {slide.imageUrl ? (
+                            <Image 
+                              src={slide.imageUrl} 
+                              alt={`Diapositiva ${index+1}`}
+                              fill
+                              style={{ objectFit: 'contain', backgroundColor: 'black' }}
+                              className="rounded-md"
                             />
+                          ) : (
+                            <div className="text-center text-muted-foreground p-2">
+                              <Upload className="h-6 w-6 mx-auto" />
+                              <p className="text-xs mt-1">Subir Imagen</p>
+                            </div>
+                          )}
+                          <Input 
+                            id={`story-img-${slide.id}`} 
+                            type="file" 
+                            accept="image/*" 
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                            onChange={(e) => handleFileChange(slide.id, e)}
+                          />
                         </div>
                         <div className="flex-grow space-y-2">
                             <Label htmlFor={`story-text-${slide.id}`}>Texto de la Diapositiva</Label>
