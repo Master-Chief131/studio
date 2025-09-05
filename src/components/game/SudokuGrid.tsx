@@ -4,6 +4,7 @@
 import type { Grid, Cell } from '@/types';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface SudokuGridProps {
   initialGrid: Grid;
@@ -14,19 +15,22 @@ interface SudokuGridProps {
   selectedCell: Cell | null;
   setSelectedCell: (cell: Cell | null) => void;
   errors: boolean[][];
+  correctCell?: Cell | null;
 }
 
 export function SudokuGrid({ 
-    initialGrid, 
-    currentGrid, 
-    onInputChange, 
-    helpCell, 
-    revealedBlocks,
-    selectedCell,
-    setSelectedCell,
-    errors
+  initialGrid, 
+  currentGrid, 
+  onInputChange, 
+  helpCell, 
+  revealedBlocks,
+  selectedCell,
+  setSelectedCell,
+  errors,
+  correctCell
 }: SudokuGridProps) {
   const [revealedCell, setRevealedCell] = useState<Cell | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
       if (helpCell) {
@@ -37,10 +41,7 @@ export function SudokuGrid({
   }, [helpCell]);
 
   const handleCellClick = (row: number, col: number) => {
-    const isGiven = initialGrid[row][col] !== null;
-    if (!isGiven) {
-        setSelectedCell({ row, col });
-    }
+    setSelectedCell({ row, col });
   }
 
   const getSubgrid = (row: number, col: number) => {
@@ -53,9 +54,13 @@ export function SudokuGrid({
         row.map((cell, colIndex) => {
           const isGiven = initialGrid[rowIndex][colIndex] !== null;
           const isError = errors[rowIndex][colIndex];
-          const isRevealed = revealedCell && revealedCell.row === rowIndex && revealedCell.col === colIndex;
+          const isRevealed = (revealedCell && revealedCell.row === rowIndex && revealedCell.col === colIndex)
+            || (correctCell && correctCell.row === rowIndex && correctCell.col === colIndex);
           const isSubgridRevealed = revealedBlocks[getSubgrid(rowIndex, colIndex)];
           const isSelected = selectedCell && selectedCell.row === rowIndex && selectedCell.col === colIndex;
+          // Nuevo: resaltar todas las celdas con el mismo número que la celda seleccionada
+          const selectedValue = selectedCell ? currentGrid[selectedCell.row][selectedCell.col] : null;
+          const isSameValue = selectedValue && cell === selectedValue;
 
           return (
             <div
@@ -63,12 +68,13 @@ export function SudokuGrid({
               onClick={() => handleCellClick(rowIndex, colIndex)}
               className={cn(
                 "relative flex items-center justify-center aspect-square rounded-sm sm:rounded-md bg-background/80 transition-all duration-1000",
-                !isGiven && "cursor-pointer",
+                "cursor-pointer",
                 (colIndex + 1) % 3 === 0 && colIndex < 8 && "border-r-2 border-r-primary/50",
                 (rowIndex + 1) % 3 === 0 && rowIndex < 8 && "border-b-2 border-b-primary/50",
                 isRevealed && "bg-accent/50",
                 isSubgridRevealed && "bg-transparent border-transparent",
-                isSelected && !isGiven && "bg-accent/30 ring-2 ring-accent z-10"
+                isSelected && "bg-accent/30 ring-2 ring-accent z-10",
+                isSameValue && !isSelected && "bg-yellow-100/60"
               )}
             >
               <input
@@ -78,12 +84,13 @@ export function SudokuGrid({
                 maxLength={1}
                 value={cell || ''}
                 onChange={(e) => {
-                    const value = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                    if ((value && !isNaN(value) && value > 0 && value <= 9) || value === null) {
-                        onInputChange(rowIndex, colIndex, value);
-                    }
+                  if (isMobile) return; // No permitir escribir en móvil
+                  const value = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                  if ((value && !isNaN(value) && value > 0 && value <= 9) || value === null) {
+                      onInputChange(rowIndex, colIndex, value);
+                  }
                 }}
-                readOnly={isGiven}
+                readOnly={isGiven || isMobile}
                 className={cn(
                   'w-full h-full text-center bg-transparent text-lg md:text-2xl font-bold font-sans focus:outline-none rounded-sm sm:rounded-md transition-colors duration-1000',
                    isGiven ? 'text-primary-foreground/80 cursor-default' : 'text-accent-foreground cursor-pointer',

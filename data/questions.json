@@ -1,0 +1,35 @@
+[
+  {
+    "id": "535676f2-d762-4b18-88f3-90d612dfccdc",
+    "question": "¿Cuál es nuesta canción?",
+    "options": [
+      "Mi Vida Entera",
+      "Mi Suerte",
+      "Aprender A Quererte",
+      "En Un Solo Dia"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "id": "e82bf6d7-7b6d-40ed-8d69-01d39576ef9b",
+    "question": "¿Donde fue la primera vez que nos vimos?",
+    "options": [
+      "En el Parque",
+      "En un Karaoke",
+      "En el Metro",
+      "En una Fiesta"
+    ],
+    "correctAnswerIndex": 2
+  },
+  {
+    "id": "7dd6ce4f-a6f7-4d76-a52d-cf370587dbe4",
+    "question": "Donde fue nuestra primera cita",
+    "options": [
+      "A una cafetería",
+      "Al Cine",
+      "A Comer",
+      "Al Parque"
+    ],
+    "correctAnswerIndex": 3
+  }
+]
