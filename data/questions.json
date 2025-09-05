@@ -1,35 +1,125 @@
 [
   {
-    "id": "535676f2-d762-4b18-88f3-90d612dfccdc",
-    "question": "¿Cuál es nuesta canción?",
+    "id": "c1a1c5b8-1a22-4f2f-8c5b-5c45a1f8e123",
+    "question": "¿Qué me regalaste en una botella de vidrio?",
     "options": [
-      "Mi Vida Entera",
-      "Mi Suerte",
-      "Aprender A Quererte",
-      "En Un Solo Dia"
+      "101 estrellas de origami",
+      "Una carta",
+      "Un peluche",
+      "Un llavero"
+
     ],
     "correctAnswerIndex": 0
   },
   {
-    "id": "e82bf6d7-7b6d-40ed-8d69-01d39576ef9b",
-    "question": "¿Donde fue la primera vez que nos vimos?",
+    "id": "f4e3d8b6-8e2c-4dbb-91a1-4a6d78d6c7a9",
+    "question": "¿Cuál fue el primer concierto al que fuimos juntos?",
     "options": [
-      "En el Parque",
-      "En un Karaoke",
-      "En el Metro",
-      "En una Fiesta"
+      "Morat",
+      "Luis Fonsi",
+      "Bad Bunny",
+      "Maná"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "id": "a6d8e9b7-4c21-4b9f-8e5f-7b1a3c2d4f56",
+    "question": "¿Qué comimos después de caminar en nuestra primera cita?",
+    "options": [
+      "Hamburguesas",
+      "Ramen",
+      "Pizza",
+      "Tacos"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "id": "b7f9a1c2-3d45-4e6b-9f01-6a7d8b9c2e34",
+    "question": "¿De qué color es el corazón del anillo que te regalé?",
+    "options": [
+      "Rojo",
+      "Azul",
+      "Blanco",
+      "Dorado"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "id": "d9e2f3a4-5b67-4c8d-9e01-7f2a3b4c5d6e",
+    "question": "¿En qué lugar solemos caminar juntos?",
+    "options": [
+      "Causeway",
+      "Parque Omar",
+      "Cinta Costera",
+      "Multiplaza"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "id": "e2f4b6a8-7c9d-4e0f-9a1b-8d3f4c5e6f7a",
+    "question": "¿Qué frase quería poner en tu anillo?",
+    "options": [
+      "Una promesa, mi vida entera",
+      "Para siempre tú y yo",
+      "Eres mi suerte",
+      "Nuestro infinito"
+    ],
+    "correctAnswerIndex": 0
+  }
+  ,
+  {
+    "id": "x1",
+    "question": "¿Qué me dijiste la primera vez que bromeamos sobre besarnos?",
+    "options": [
+      "Que eras tímida",
+      "Que sabías besar",
+      "Que me ibas a enseñar",
+      "Que mejor después"
+    ],
+    "correctAnswerIndex": 1
+  },
+  {
+    "id": "x2",
+    "question": "¿Qué dijiste cuando nos tocó separarnos después de nuestra primera cita?",
+    "options": [
+      "Que no querías soltarme",
+      "Que ya querías verme de nuevo",
+      "Que fue el mejor día",
+      "Que querías comer otra hamburguesa"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "id": "x3",
+    "question": "Cuando me mandaste una foto en pijama, ¿qué pensé yo?",
+    "options": [
+      "Que te veías hermosa",
+      "Que te veías tierna",
+      "Que estabas cansada",
+      "Que querías dormir"
+    ],
+    "correctAnswerIndex": 0
+  },
+  {
+    "id": "x4",
+    "question": "¿Con qué animalito siempre me haces stickers o memes para mimarme?",
+    "options": [
+      "Un perrito",
+      "Un osito",
+      "Un gatito",
+      "Un conejo"
     ],
     "correctAnswerIndex": 2
   },
   {
-    "id": "7dd6ce4f-a6f7-4d76-a52d-cf370587dbe4",
-    "question": "Donde fue nuestra primera cita",
+    "id": "x5",
+    "question": "¿Qué detalle tuyo me derritió por completo?",
     "options": [
-      "A una cafetería",
-      "Al Cine",
-      "A Comer",
-      "Al Parque"
+      "Los 101 origamis en la botella",
+      "Tu sonrisa",
+      "Tus abrazos",
+      "Tus mensajes largos"
     ],
-    "correctAnswerIndex": 3
+    "correctAnswerIndex": 0
   }
 ]

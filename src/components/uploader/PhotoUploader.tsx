@@ -363,11 +363,11 @@ export function PhotoUploader() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if(file.size > 1 * 1024 * 1024) { // 1MB limit
+      if(file.size > 10 * 1024 * 1024) { // 10MB limit
         toast({
           variant: "destructive",
           title: "Imagen demasiado grande",
-          description: "Por favor, selecciona una imagen de menos de 1MB."
+          description: "Por favor, selecciona una imagen de menos de 10MB."
         });
         return;
       }
@@ -514,9 +514,16 @@ export function PhotoUploader() {
                 </SelectContent>
               </Select>
           </div>
-            <div className="space-y-2">
-              <Label htmlFor="photo-upload">Archivo de Foto (Recompensa)</Label>
-              <Input id="photo-upload" type="file" accept="image/*" onChange={handleFileChange} />
+            <div className="space-y-2 flex items-end gap-2">
+              <div className="flex-1">
+                <Label htmlFor="photo-upload">Archivo de Foto (Recompensa)</Label>
+                <Input id="photo-upload" type="file" accept="image/*" onChange={handleFileChange} />
+              </div>
+              {photos[selectedLevel]?.imageUrl && (
+                <Button variant="destructive" size="icon" title="Eliminar foto de este nivel" onClick={() => handleRemovePhoto(selectedLevel)}>
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
