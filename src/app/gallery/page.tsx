@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -83,61 +84,68 @@ export default function GalleryPage() {
                 {/* Spacer div */}
                 <div style={{ width: '150px' }}></div>
             </div>
-
-          {unlockedPhotos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {unlockedPhotos.map((photo) => (
-                <Card key={photo.level} className="group relative overflow-hidden rounded-lg">
-                  <CardHeader className="absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/60 to-transparent p-4">
-                    <CardTitle className="text-white font-headline text-lg">Nivel {photo.level}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0 aspect-square">
-                    <Image src={photo.imageUrl} alt={`Recuerdo del nivel ${photo.level}`} fill objectFit="cover" />
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
-                       <Button
-                            variant="secondary"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => setSelectedPhoto(photo)}
-                        >
-                            <Maximize className="mr-2 h-4 w-4" />
-                            Ver
-                        </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-               <Card 
-                  className={cn(
-                    "group relative overflow-hidden rounded-lg flex flex-col items-center justify-center text-center p-4 transition-all",
-                    allLevelsCompleted ? 
-                    "bg-accent/80 border-accent cursor-pointer hover:shadow-lg hover:-translate-y-1" :
-                    "bg-muted/60"
-                  )}
-                  onClick={() => allLevelsCompleted && storySlides.length > 0 && setShowFinalSurprise(true)}
-                >
-                  {allLevelsCompleted ? (
-                    <>
-                      <Trophy className="h-16 w-16 text-accent-foreground mb-4 transition-transform group-hover:scale-110" />
-                      <CardTitle className="font-headline text-xl text-accent-foreground">¡Premio Final!</CardTitle>
-                      <CardDescription className="text-accent-foreground/70 mt-1">Haz click para ver la historia</CardDescription>
-                    </>
-                  ) : (
-                    <>
-                       <Package className="h-16 w-16 text-muted-foreground/60 mb-4" />
-                       <CardTitle className="font-headline text-xl text-foreground/80">Premio Bloqueado</CardTitle>
-                       <CardDescription className="text-muted-foreground/80 mt-1">
-                          Completa {levelsToGo} {levelsToGo === 1 ? 'nivel más' : 'niveles más'} para desbloquear.
-                       </CardDescription>
-                    </>
-                  )}
-                </Card>
+            
+          {unlockedPhotos.length === 0 && !allLevelsCompleted ? (
+             <div className="text-center py-20">
+                <p className="text-xl text-muted-foreground">Aún no has desbloqueado ninguna foto.</p>
+                <p className="mt-2">¡Completa algunos puzzles para empezar tu colección!</p>
             </div>
-          ) : (
-            <div className="text-center py-20">
-              <p className="text-xl text-muted-foreground">Aún no has desbloqueado ninguna foto.</p>
-              <p className="mt-2">¡Completa algunos puzzles para empezar tu colección!</p>
+          ): (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {unlockedPhotos.map((photo) => (
+                  <Card key={photo.level} className="group relative overflow-hidden rounded-lg">
+                    <CardHeader className="absolute top-0 left-0 z-10 w-full bg-gradient-to-b from-black/60 to-transparent p-4">
+                      <CardTitle className="text-white font-headline text-lg">Nivel {photo.level}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0 aspect-square">
+                      <Image src={photo.imageUrl} alt={`Recuerdo del nivel ${photo.level}`} fill objectFit="cover" />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-all duration-300 flex items-center justify-center">
+                         <Button
+                              variant="secondary"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={() => setSelectedPhoto(photo)}
+                          >
+                              <Maximize className="mr-2 h-4 w-4" />
+                              Ver
+                          </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
             </div>
           )}
+
+           <div className="mt-8 pt-8 border-t">
+                 <h3 className="font-headline text-2xl text-center font-bold text-primary-foreground/90 mb-4">Recompensa Final</h3>
+                 <div className="flex justify-center">
+                     <Card 
+                        className={cn(
+                        "w-full max-w-sm group relative overflow-hidden rounded-lg flex flex-col items-center justify-center text-center p-4 transition-all",
+                        allLevelsCompleted ? 
+                        "bg-accent/80 border-accent cursor-pointer hover:shadow-lg hover:-translate-y-1" :
+                        "bg-muted/60"
+                        )}
+                        onClick={() => allLevelsCompleted && storySlides.length > 0 && setShowFinalSurprise(true)}
+                    >
+                        {allLevelsCompleted ? (
+                        <>
+                            <Trophy className="h-16 w-16 text-accent-foreground mb-4 transition-transform group-hover:scale-110" />
+                            <CardTitle className="font-headline text-xl text-accent-foreground">¡Premio Final!</CardTitle>
+                            <CardDescription className="text-accent-foreground/70 mt-1">Haz click para ver la historia</CardDescription>
+                        </>
+                        ) : (
+                        <>
+                           <Package className="h-16 w-16 text-muted-foreground/60 mb-4" />
+                           <CardTitle className="font-headline text-xl text-foreground/80">Premio Bloqueado</CardTitle>
+                           <CardDescription className="text-muted-foreground/80 mt-1">
+                                Completa {levelsToGo} {levelsToGo === 1 ? 'nivel más' : 'niveles más'} para desbloquear.
+                           </CardDescription>
+                        </>
+                        )}
+                    </Card>
+                 </div>
+           </div>
+
         </main>
       </div>
 
